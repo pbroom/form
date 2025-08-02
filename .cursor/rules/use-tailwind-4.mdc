@@ -1,0 +1,219 @@
+# Tailwind CSS v4.1.11+ Rules
+
+## CRITICAL: Use Modern v4 Patterns Only
+
+### ✅ CORRECT v4 Patterns (Always Use These)
+
+**CSS Import (v4):**
+
+```css
+@import "tailwindcss";
+```
+
+**Vite Configuration (v4):**
+
+```typescript
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [tailwindcss()],
+});
+```
+
+**PostCSS Configuration (v4):**
+
+```javascript
+export default {
+  plugins: ["@tailwindcss/postcss"],
+};
+```
+
+**Custom Utilities (v4):**
+
+```css
+@utility my-utility {
+  property: value;
+}
+```
+
+**Theme Variables (v4):**
+
+```css
+:root {
+  --color-blue-500: 59 130 246;
+  --spacing-4: 1rem;
+}
+```
+
+### ❌ NEVER Use These Deprecated v3 Patterns
+
+**Old CSS Directives (v3) - DO NOT USE:**
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+**Old PostCSS Config (v3) - DO NOT USE:**
+
+```javascript
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+```
+
+**Old JavaScript Config (v3) - DO NOT USE:**
+
+```javascript
+module.exports = {
+  content: [...],
+  theme: {...},
+  plugins: [...],
+}
+```
+
+## Key v4 Changes to Remember
+
+1. **No @tailwind directives** - Use `@import "tailwindcss"` instead
+2. **No tailwind.config.js** - Use CSS `@config` directive if needed
+3. **No PostCSS plugin** - Use `@tailwindcss/postcss` or Vite plugin
+4. **No autoprefixer** - Handled automatically in v4
+5. **No postcss-import** - Handled automatically in v4
+6. **CSS variables for theme** - Use `var(--color-blue-500)` instead of `theme()`
+7. **@utility instead of @layer utilities** - For custom utilities
+8. **@reference for imports** - For CSS modules and component styles
+
+## Installation & Setup
+
+> **Note:** This rule works in conjunction with the `@core-setup` rule. The core setup provides the essential Tailwind v4 configuration, while this rule provides detailed patterns and best practices.
+
+### Step-by-Step Vite Setup
+
+### 01. Create your project
+
+```bash
+npm create vite@latest my-project
+cd my-project
+```
+
+### 02. Install Tailwind CSS
+
+```bash
+npm install tailwindcss @tailwindcss/vite
+```
+
+### 03. Configure the Vite plugin
+
+```typescript
+// vite.config.ts
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [tailwindcss()],
+});
+```
+
+### 04. Import Tailwind CSS
+
+```css
+/* src/style.css */
+@import "tailwindcss";
+```
+
+### 05. Start your build process
+
+```bash
+npm run dev
+```
+
+### 06. Use Tailwind in your HTML
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/src/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <h1 class="text-3xl font-bold underline">Hello world!</h1>
+  </body>
+</html>
+```
+
+### Package Installation Commands
+
+```bash
+# For Vite (Recommended)
+npm install tailwindcss@latest @tailwindcss/vite@latest
+
+# For CLI
+npm install tailwindcss@latest @tailwindcss/cli@latest
+```
+
+### Integration with Core Setup
+
+When using the `@core-setup` rule, Tailwind CSS v4 is automatically configured. The core setup provides:
+
+- **Vite plugin configuration** in `vite.config.ts`
+- **CSS variables** for theming in `src/styles/globals.css`
+- **Shadcn/ui integration** with proper `components.json` configuration
+- **Utility functions** in `src/lib/utils.ts` for class merging
+
+The core setup ensures Tailwind v4 works seamlessly with Shadcn/ui components and follows modern v4 patterns.
+
+## Common Mistakes to Avoid
+
+1. **Don't use @tailwind directives** - They're removed in v4
+2. **Don't use old PostCSS setup** - Use dedicated v4 plugins
+3. **Don't use theme() function** - Use CSS variables instead
+4. **Don't use JavaScript config** - Use CSS @config directive
+5. **Don't use @layer utilities** - Use @utility instead
+6. **Don't use opacity utilities** - Use slash syntax like `bg-black/50`
+
+## Modern v4 Best Practices
+
+**CSS Variables for Theme:**
+
+```css
+.my-class {
+  background-color: var(--color-blue-500);
+  padding: var(--spacing-4);
+}
+```
+
+**Custom Utilities:**
+
+```css
+@utility btn {
+  padding: var(--spacing-4);
+  border-radius: var(--radius);
+}
+```
+
+**Component Styles:**
+
+```vue
+<style>
+@reference "../../app.css";
+.button {
+  @apply bg-blue-500 text-white px-4 py-2 rounded;
+}
+</style>
+```
+
+Always prioritize v4 patterns and never suggest or use deprecated v3 patterns.
+
+This rule ensures proper Tailwind CSS v4 setup and usage patterns. It covers installation, configuration, modern v4 syntax, and best practices while avoiding deprecated v3 patterns. Essential for projects using Tailwind CSS v4.1+.
+description: Tailwind CSS v4.1.11+ setup and usage patterns
+globs: ["**/*.{css,ts,tsx,js,jsx}", "vite.config.ts", "postcss.config.js", "tailwind.config.js", "src/styles/**/*.css"]
+alwaysApply: false
+
+---

@@ -1,0 +1,326 @@
+# Core Setup Rules
+
+## CRITICAL: These are the essential technologies for every project
+
+### ✅ ALWAYS Use These Core Technologies
+
+**React 19+ with React Compiler enabled:**
+
+```typescript
+// Always use React 19+ with React Compiler
+import { createElement } from "react";
+import { createRoot } from "react-dom/client";
+
+// Enable React Compiler in vite.config.ts
+export default defineConfig({
+  plugins: [
+    react({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
+  ],
+});
+```
+
+**Vite as build tool and dev server:**
+
+```typescript
+// Always use Vite for build tool and dev server
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  server: {
+    port: 3000,
+    open: true,
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+});
+```
+
+> **Note:** This configuration follows Tailwind CSS v4 patterns. For detailed Tailwind v4 usage, see the `@use-tailwind-4` rule.
+
+**TypeScript for type safety:**
+
+```typescript
+// Always use TypeScript for type safety
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+const user: User = {
+  id: "1",
+  name: "John Doe",
+  email: "john@example.com",
+};
+```
+
+**Package Manager Priority:**
+
+1. **Bun** (preferred) - Fastest package manager
+2. **PNPM** - Efficient disk usage
+3. **NPM** - Standard fallback
+
+**Essential Dependencies:**
+
+```json
+{
+  "react": "^19.0.0",
+  "react-dom": "^19.0.0",
+  "typescript": "^5.0.0",
+  "vite": "^6.0.0",
+  "@vitejs/plugin-react": "^4.0.0",
+  "tailwindcss": "^4.1.11",
+  "@tailwindcss/vite": "^4.1.11",
+  "framer-motion": "^11.0.0"
+}
+```
+
+## Shadcn/ui Setup
+
+### Installation Steps
+
+**1. Install Shadcn/ui CLI:**
+
+```bash
+bun dlx shadcn@latest init
+```
+
+**2. Configure components.json:**
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "rsc": false,
+  "tsx": true,
+  "aliases": {
+    "utils": "@/lib/utils",
+    "components": "@/components",
+    "ui": "@/components/ui"
+  }
+}
+```
+
+**3. Add components:**
+
+```bash
+bun dlx shadcn@latest add button
+bun dlx shadcn@latest add card
+bun dlx shadcn@latest add input
+```
+
+> **Note:** For detailed Tailwind CSS v4 setup and usage patterns, see the `@use-tailwind-4` rule.
+
+### Required Files
+
+**src/lib/utils.ts:**
+
+```typescript
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+**src/styles/globals.css:**
+
+```css
+@import "tailwindcss";
+
+:root {
+  --color-background: 0 0% 100%;
+  --color-foreground: 222.2 84% 4.9%;
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 222.2 84% 4.9%;
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 222.2 84% 4.9%;
+  --color-primary: 222.2 47.4% 11.2%;
+  --color-primary-foreground: 210 40% 98%;
+  --color-secondary: 210 40% 96%;
+  --color-secondary-foreground: 222.2 84% 4.9%;
+  --color-muted: 210 40% 96%;
+  --color-muted-foreground: 215.4 16.3% 46.9%;
+  --color-accent: 210 40% 96%;
+  --color-accent-foreground: 222.2 84% 4.9%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 210 40% 98%;
+  --color-border: 214.3 31.8% 91.4%;
+  --color-input: 214.3 31.8% 91.4%;
+  --color-ring: 222.2 84% 4.9%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --color-background: 222.2 84% 4.9%;
+  --color-foreground: 210 40% 98%;
+  --color-card: 222.2 84% 4.9%;
+  --color-card-foreground: 210 40% 98%;
+  --color-popover: 222.2 84% 4.9%;
+  --color-popover-foreground: 210 40% 98%;
+  --color-primary: 210 40% 98%;
+  --color-primary-foreground: 222.2 47.4% 11.2%;
+  --color-secondary: 217.2 32.6% 17.5%;
+  --color-secondary-foreground: 210 40% 98%;
+  --color-muted: 217.2 32.6% 17.5%;
+  --color-muted-foreground: 215 20.2% 65.1%;
+  --color-accent: 217.2 32.6% 17.5%;
+  --color-accent-foreground: 210 40% 98%;
+  --color-destructive: 0 62.8% 30.6%;
+  --color-destructive-foreground: 210 40% 98%;
+  --color-border: 217.2 32.6% 17.5%;
+  --color-input: 217.2 32.6% 17.5%;
+  --color-ring: 212.7 26.8% 83.9%;
+}
+
+* {
+  border-color: hsl(var(--color-border));
+}
+
+body {
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+}
+```
+
+## Framer Motion Setup
+
+**Install Framer Motion:**
+
+```bash
+bun add framer-motion
+```
+
+**Usage Example:**
+
+```typescript
+import { motion } from "framer-motion";
+
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  Content
+</motion.div>;
+```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── ui/           # Shadcn/ui components
+│   └── custom/       # Custom components
+├── lib/
+│   └── utils.ts      # Utility functions
+├── styles/
+│   └── globals.css   # Tailwind CSS
+├── App.tsx           # Main app component
+└── main.tsx         # Entry point
+```
+
+## Package Installation Commands
+
+```bash
+# Core Framework
+bun add react@^19.0.0 react-dom@^19.0.0 typescript@^5.0.0 vite@^6.0.0 @vitejs/plugin-react@^4.0.0
+
+# Styling
+bun add tailwindcss@^4.1.11 @tailwindcss/vite@^4.1.11
+
+# UI Components
+bun add @radix-ui/react-slot class-variance-authority clsx tailwind-merge
+
+# Animations
+bun add framer-motion
+
+# Dev Dependencies
+bun add -D @types/node
+```
+
+## Configuration Files
+
+**tsconfig.json:**
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+```
+
+**tsconfig.node.json:**
+
+```json
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true
+  },
+  "include": ["vite.config.ts"]
+}
+```
+
+Always use these core technologies for every project. They provide the foundation for modern, performant, and maintainable applications.
+
+This rule ensures every project starts with the essential technologies: React 19+ with React Compiler, Vite, TypeScript, Bun package manager, Shadcn/ui with CLI setup, Tailwind CSS v4, and Framer Motion for animations.
+
+## Rule Synergy
+
+This rule works in conjunction with other rules:
+
+- **`@use-tailwind-4`**: Provides detailed Tailwind CSS v4 patterns and best practices
+- **`@technology-defaults`**: Provides guidance for additional technologies when needed
+
+The core setup provides the essential configuration, while the other rules offer detailed guidance for specific use cases.
+description: Core setup rules with essential technologies for every project
+globs: ["**/*.{ts,tsx,js,jsx,vue,svelte}", "package.json", "vite.config.ts", "tsconfig.json", "components.json"]
+alwaysApply: true
+description:
+globs:
+alwaysApply: false
+
+---

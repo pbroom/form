@@ -1,0 +1,402 @@
+# Technology Defaults & Guidance
+
+## When You Need to Make Technology Decisions
+
+This rule provides guidance for choosing technologies when you need to make decisions, rather than adding unnecessary dependencies prematurely.
+
+## Database & Backend
+
+### ✅ RECOMMENDED When You Need Backend
+
+**Convex - Real-time backend-as-a-service:**
+
+- **Use when**: You need real-time features, user authentication, or database
+- **Best for**: Real-time apps, collaborative features, user management
+
+```typescript
+// Install when needed
+bun add convex
+
+// Usage
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
+
+const documents = useQuery(api.documents.list);
+const createDocument = useMutation(api.documents.create);
+```
+
+**Drizzle ORM - Type-safe SQL ORM:**
+
+- **Use when**: You need a traditional SQL database
+- **Best for**: Complex queries, data relationships, existing SQL infrastructure
+
+```typescript
+// Install when needed
+bun add drizzle-orm @vercel/postgres
+
+// Usage
+import { drizzle } from "drizzle-orm/vercel-postgres";
+import { sql } from "drizzle-orm";
+import { users } from "./schema";
+
+const db = drizzle(sql);
+const allUsers = await db.select().from(users);
+```
+
+**tRPC - End-to-end typesafe APIs:**
+
+- **Use when**: You need type-safe API communication
+- **Best for**: Full-stack TypeScript applications
+
+```typescript
+// Install when needed
+bun add @trpc/server @trpc/client @trpc/react-query
+
+// Usage
+import { trpc } from "../utils/trpc";
+
+const { data, isLoading } = trpc.users.list.useQuery();
+const createUser = trpc.users.create.useMutation();
+```
+
+## State Management
+
+### ✅ RECOMMENDED When You Need State Management
+
+**Zustand - Client-side state management:**
+
+- **Use when**: You need global state beyond React's built-in state
+- **Best for**: Simple global state, user preferences, app settings
+
+```typescript
+// Install when needed
+bun add zustand
+
+// Usage
+import { create } from "zustand";
+
+interface UserStore {
+  user: User | null;
+  setUser: (user: User) => void;
+  logout: () => void;
+}
+
+const useUserStore = create<UserStore>((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+  logout: () => set({ user: null }),
+}));
+```
+
+**Tanstack Query - Server state management:**
+
+- **Use when**: You need to manage server data, caching, or background updates
+- **Best for**: API data, real-time updates, complex data fetching
+
+```typescript
+// Install when needed
+bun add @tanstack/react-query @tanstack/react-query-devtools
+
+// Usage
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+const { data, isLoading, error } = useQuery({
+  queryKey: ["users"],
+  queryFn: fetchUsers,
+});
+
+const mutation = useMutation({
+  mutationFn: createUser,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+  },
+});
+```
+
+## Routing
+
+### ✅ RECOMMENDED When You Need Routing
+
+**Tanstack Router - Type-safe routing:**
+
+- **Use when**: You need client-side routing with type safety
+- **Best for**: Single-page applications, complex routing requirements
+
+```typescript
+// Install when needed
+bun add @tanstack/react-router
+
+// Usage
+import { createRouter, createRoute } from "@tanstack/react-router";
+
+const route = createRoute({
+  component: UserPage,
+  path: "/users/$userId",
+});
+
+const router = createRouter({ routeTree });
+```
+
+## Authentication
+
+### ✅ RECOMMENDED When You Need Authentication
+
+**WorkOS - Enterprise authentication:**
+
+- **Use when**: You need enterprise SSO, SAML, or complex auth requirements
+- **Best for**: B2B applications, enterprise customers
+
+```typescript
+// Install when needed
+bun add @workos-inc/node
+
+// Usage
+import { WorkOS } from "@workos-inc/node";
+
+const workos = new WorkOS(process.env.WORKOS_API_KEY);
+
+const authorizationURL = workos.sso.getAuthorizationURL({
+  clientID: process.env.WORKOS_CLIENT_ID,
+  redirectURI: "https://example.com/callback",
+  state: "custom-state",
+});
+```
+
+## Specialized Functionality
+
+### Rich Text Editing
+
+**Plate.js - Complex, extensible editors:**
+
+- **Use when**: You need a full-featured rich text editor
+- **Best for**: Content management systems, document editors
+
+```typescript
+// Install when needed
+bun add @udecode/plate-common @udecode/plate-basic-marks
+
+// Usage
+import { createPlateEditor, Plate } from "@udecode/plate-common";
+import { createBoldPlugin } from "@udecode/plate-basic-marks";
+
+const plugins = [createBoldPlugin()];
+const editor = createPlateEditor({ plugins });
+
+<Plate editor={editor}>
+  <PlateContent />
+</Plate>;
+```
+
+**TipTap - Simpler, headless rich text:**
+
+- **Use when**: You need a simpler rich text editor
+- **Best for**: Comments, simple content editing
+
+```typescript
+// Install when needed
+bun add @tiptap/react @tiptap/starter-kit
+
+// Usage
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+
+const editor = useEditor({
+  extensions: [StarterKit],
+  content: "<p>Hello World!</p>",
+});
+
+<EditorContent editor={editor} />;
+```
+
+### Drag & Drop
+
+**@dnd-kit/core - Modern drag and drop:**
+
+- **Use when**: You need drag and drop functionality
+- **Best for**: Kanban boards, file uploads, reordering lists
+
+```typescript
+// Install when needed
+bun add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+
+// Usage
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
+<DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+  <SortableContext items={items} strategy={verticalListSortingStrategy}>
+    {items.map((item) => (
+      <SortableItem key={item.id} id={item.id}>
+        {item.content}
+      </SortableItem>
+    ))}
+  </SortableContext>
+</DndContext>;
+```
+
+### Node-Based UI
+
+**React Flow - Interactive node graphs:**
+
+- **Use when**: You need node-based interfaces or flow diagrams
+- **Best for**: Workflow builders, visual programming, data pipelines
+
+```typescript
+// Install when needed
+bun add @xyflow/react
+
+// Usage
+import { ReactFlow, Controls, Background } from "@xyflow/react";
+
+<ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange}>
+  <Controls />
+  <Background />
+</ReactFlow>;
+```
+
+### Data Visualization
+
+**D3.js - Custom, complex visualizations:**
+
+- **Use when**: You need custom data visualizations
+- **Best for**: Complex charts, custom dashboards, unique visualizations
+
+```typescript
+// Install when needed
+bun add d3
+
+// Usage
+import * as d3 from "d3";
+
+const svg = d3
+  .select("#chart")
+  .append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+svg
+  .selectAll("circle")
+  .data(data)
+  .enter()
+  .append("circle")
+  .attr("cx", (d) => xScale(d.x))
+  .attr("cy", (d) => yScale(d.y))
+  .attr("r", 5);
+```
+
+### 3D Graphics
+
+**React Three Fiber + Three.js - 3D scenes:**
+
+- **Use when**: You need 3D graphics or interactive 3D content
+- **Best for**: 3D visualizations, games, interactive 3D experiences
+
+```typescript
+// Install when needed
+bun add @react-three/fiber @react-three/drei three
+
+// Usage
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+
+<Canvas>
+  <ambientLight intensity={0.5} />
+  <pointLight position={[10, 10, 10]} />
+  <mesh>
+    <boxGeometry args={[1, 1, 1]} />
+    <meshStandardMaterial color="orange" />
+  </mesh>
+  <OrbitControls />
+</Canvas>;
+```
+
+### Caching & Performance
+
+**Redis - Caching and session storage:**
+
+- **Use when**: You need caching, session storage, or real-time features
+- **Best for**: High-performance applications, session management, caching
+
+```typescript
+// Install when needed
+bun add redis
+
+// Usage
+import { createClient } from "redis";
+
+const client = createClient({
+  url: process.env.REDIS_URL,
+});
+
+await client.connect();
+await client.set("key", "value");
+const value = await client.get("key");
+```
+
+## Validation
+
+### ✅ RECOMMENDED When You Need Validation
+
+**Zod - Runtime validation and type inference:**
+
+- **Use when**: You need form validation, API validation, or runtime type checking
+- **Best for**: Form validation, API schemas, data validation
+
+```typescript
+// Install when needed
+bun add zod
+
+// Usage
+import { z } from "zod";
+
+const UserSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+type User = z.infer<typeof UserSchema>;
+```
+
+## Decision Framework
+
+### When to Add Dependencies
+
+1. **Start with core setup only** - Don't add dependencies until you need them
+2. **Evaluate requirements** - What specific functionality do you need?
+3. **Consider alternatives** - Can you solve this with built-in React features?
+4. **Check bundle size** - Will this significantly impact performance?
+5. **Assess maintenance** - Is this dependency well-maintained?
+
+### Questions to Ask Before Adding
+
+- Do I actually need this functionality right now?
+- Can I solve this with existing tools or built-in features?
+- Is this the most appropriate solution for my use case?
+- Will this dependency be maintained long-term?
+- Does this align with my project's performance requirements?
+
+## ❌ AVOID These Alternatives
+
+- **Database**: Avoid Prisma, TypeORM, or raw SQL (use Drizzle instead)
+- **State Management**: Avoid Redux or SWR (use Zustand/Tanstack Query)
+- **UI**: Avoid Material-UI, Ant Design, or custom components (use Shadcn/ui)
+- **Styling**: Avoid CSS-in-JS, styled-components, or CSS modules (use Tailwind)
+- **Authentication**: Avoid Auth0, Firebase Auth, or custom auth (use WorkOS)
+- **Rich Text**: Avoid Draft.js, or contenteditable (use Plate.js/TipTap)
+- **Drag & Drop**: Avoid react-beautiful-dnd or HTML5 drag/drop (use @dnd-kit)
+
+Always evaluate your specific needs before adding dependencies. Start simple and add complexity only when required.
+
+This rule provides guidance for choosing technologies when you need to make decisions, rather than adding unnecessary dependencies prematurely. It covers database/backend, state management, routing, authentication, specialized functionality, and validation with clear use cases and installation commands.
+description: Technology guidance for making decisions when additional functionality is needed
+globs: ["**/*.{ts,tsx,js,jsx,vue,svelte}", "package.json", "src/**/*.{ts,tsx}"]
+alwaysApply: false
+description:
+globs:
+alwaysApply: false
+
+---
