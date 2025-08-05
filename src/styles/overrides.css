@@ -1,0 +1,28 @@
+/* React Flow Overrides - Minimal approach */
+
+/* Only override what's absolutely necessary */
+.react-flow__edges {
+	overflow: visible !important;
+}
+
+/* Hide attribution */
+.react-flow__attribution {
+	display: none !important;
+}
+
+/* Minimap background */
+.react-flow__minimap-mask {
+	fill: var(--background) !important;
+	stroke: none !important;
+	opacity: 0.5 !important;
+}
+
+/* Minimap node */
+.react-flow__minimap-node {
+	fill: var(--muted-foreground) !important;
+}
+
+.react-flow__handle {
+	background-color: unset;
+	border-width: 0;
+}
