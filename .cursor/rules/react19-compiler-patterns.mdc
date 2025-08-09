@@ -1,0 +1,73 @@
+# React 19 + React Compiler patterns (use fewer manual memos)
+
+Goal: Adopt React 19 with the React Compiler. Prefer simple React code and omit unnecessary `useMemo`, `useCallback`, and `React.memo` unless required for correctness.
+
+## Configuration
+
+- Default target is React 19; no extra runtime needed. If targeting 17/18, add `react-compiler-runtime`.
+- Optional per-component opt-in: add the directive `"use memo"` at the top of a component/hook to force compilation when needed.
+- Docs: [Compiler config](https://react.dev/reference/react-compiler/configuration), [Directives](https://react.dev/reference/react-compiler/directives), [Target](https://react.dev/reference/react-compiler/target).
+
+## When to avoid memoization (default)
+
+- Don't add `useMemo`/`useCallback`/`React.memo` just for "perf". The compiler handles typical memoization automatically.
+- Inline handlers and computed values are preferred unless identity stability is required.
+- Docs: [Compiler intro](https://react.dev/learn/react-compiler), Q&A: compiler reduces need for manual memoization in [useMemo](https://react.dev/reference/react/useMemo) and [useCallback](https://react.dev/reference/react/useCallback).
+
+## When to keep/use memoization (identity needed for correctness)
+
+Use these only if any item below is true:
+
+- A function/object identity is part of a dependency for an effect or external subscription.
+- A function/object is stored out of render (e.g., ref, external store, `node.data`, context value) and must remain stable between renders.
+- You pass a prop to a memoized child that relies on referential equality for correctness (not just micro-optimization).
+
+Guidance:
+
+- `useCallback(fn, deps)` for handlers whose identity must be stable (effects, context, external storage). See [useCallback](https://react.dev/reference/react/useCallback).
+- `useMemo(calc, deps)` for objects/arrays used as effect deps or context values. See [useMemo](https://react.dev/reference/react/useMemo).
+- For context values, memoize the value object and any functions only if consumers or effects depend on identity. Example patterns in [useContext](https://react.dev/reference/react/useContext).
+
+## Effects and dependencies
+
+- Always list all reactive deps. Prefer updater functions to avoid wide deps when updating state (see `setState(prev => ...)`).
+- Don't create new objects/functions inline if they are effect deps; create them in component scope or memoize only for correctness.
+
+## Patterns for this codebase
+
+- Node handlers (`handleParamChange`, `handleLabelChange`) are stored on `node.data`. Keep them stable (use `useCallback`) unless refactoring away from storing functions in node data.
+- Palette commands and inline UI handlers don't need memoization; the compiler optimizes typical cases.
+- `DraggableMinimap` drag handlers can be plain functions; only memoize if a consumer depends on identity.
+- Prefer simple props and context values; memoize only when identity stability is required for effects/consumers.
+
+## Anti-patterns to avoid
+
+- Blanket `useMemo`/`useCallback`/`React.memo` "for perf".
+- Hiding missing deps by memoizing unnecessarily to satisfy linters.
+- Calling hooks (including `useMemo`) inside loops/conditions. Follow standard hook rules.
+- Deprecated module factory components; use regular function components. See upgrade guide.
+
+## Quick checklist
+
+- Do I need stable identity for correctness (effects, external storage, context value, memoized consumer)? If no, don't memoize.
+- Do I have measured performance issues the compiler can't handle? If no, don't memoize.
+- Is a child using referential equality for behavior, not micro-optimization? If no, don't memoize.
+
+## References
+
+- useMemo: [react.dev/reference/react/useMemo](https://react.dev/reference/react/useMemo)
+- useCallback: [react.dev/reference/react/useCallback](https://react.dev/reference/react/useCallback)
+- Compiler intro: [react.dev/learn/react-compiler](https://react.dev/learn/react-compiler)
+- Compiler configuration: [react.dev/reference/react-compiler/configuration](https://react.dev/reference/react-compiler/configuration)
+- Compiler directives: [react.dev/reference/react-compiler/directives](https://react.dev/reference/react-compiler/directives)
+- Compiler target: [react.dev/reference/react-compiler/target](https://react.dev/reference/react-compiler/target)
+  description: |
+  Guidance for using React 19 compiler patterns in this codebase.
+  - Prefer inline handlers and computed values unless identity stability is required for correctness (e.g., effect dependencies, context values, or external storage).
+  - Use useCallback/useMemo only when function/object identity is needed for correctness, not for micro-optimization.
+  - Avoid unnecessary memoization; the React compiler optimizes typical cases.
+  - See full rules and rationale below for when to memoize, effect dependency management, and anti-patterns to avoid.
+    globs:
+    alwaysApply: true
+
+---

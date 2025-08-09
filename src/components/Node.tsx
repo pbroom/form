@@ -6,6 +6,7 @@ import {
 	NODE_DEFINITIONS,
 	type NodeParameterDefinition,
 } from '@/lib/node-registry';
+import DraggableNumberInput from '@/components/ui/draggable-number-input';
 
 export type NodeData = {
 	typeKey: keyof typeof NODE_DEFINITIONS;
@@ -25,18 +26,15 @@ function ParameterControl({
 }) {
 	if (def.type === 'number') {
 		return (
-			<label className='flex items-center justify-between gap-2 text-xs py-1'>
-				<span className='text-muted-foreground'>{def.label}</span>
-				<input
-					className='w-24 rounded-md bg-secondary px-2 py-1 text-right'
-					type='number'
-					value={Number(value ?? def.defaultValue)}
-					min={def.min}
-					max={def.max}
-					step={def.step}
-					onChange={(e) => onChange(parseFloat(e.target.value))}
-				/>
-			</label>
+			<DraggableNumberInput
+				label={def.label}
+				value={Number(value ?? def.defaultValue)}
+				min={def.min}
+				max={def.max}
+				step={def.step}
+				onChange={onChange}
+				width='sm'
+			/>
 		);
 	}
 	if (def.type === 'color') {
@@ -99,7 +97,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 				bgByAppearance[appearance]
 			)}
 		>
-			<CustomHandle type='target' position={Position.Top} />
+			<CustomHandle type='target' position={Position.Left} />
 
 			<div className='text-foreground text-xs font-medium pb-1'>
 				{d.label ?? def?.label ?? 'Node'}
@@ -118,7 +116,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 				</div>
 			) : null}
 
-			<CustomHandle type='source' position={Position.Bottom} />
+			<CustomHandle type='source' position={Position.Right} />
 		</div>
 	);
 }

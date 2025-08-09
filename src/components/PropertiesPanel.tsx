@@ -5,6 +5,7 @@ import {
 	type NodeParameterDefinition,
 } from '@/lib/node-registry';
 import type {NodeData} from './Node';
+import DraggableNumberInput from '@/components/ui/draggable-number-input';
 
 type PropertiesPanelProps = {
 	node: Node<NodeData> | null;
@@ -23,18 +24,17 @@ function ParameterControl({
 }) {
 	if (def.type === 'number') {
 		return (
-			<label className='flex items-center justify-between gap-2 text-xs py-1'>
-				<span className='text-muted-foreground'>{def.label}</span>
-				<input
-					className='w-28 rounded-md bg-secondary px-2 py-1 text-right'
-					type='number'
-					value={Number(value ?? def.defaultValue)}
-					min={def.min}
-					max={def.max}
-					step={def.step}
-					onChange={(e) => onChange(parseFloat(e.target.value))}
-				/>
-			</label>
+			<DraggableNumberInput
+				label={def.label}
+				value={Number(value ?? def.defaultValue)}
+				min={def.min}
+				max={def.max}
+				step={def.step}
+				onChange={onChange}
+				className='py-1'
+				inputClassName='w-28'
+				width='md'
+			/>
 		);
 	}
 	if (def.type === 'color') {
@@ -119,7 +119,7 @@ export default function PropertiesPanel({
 					<div className='text-xs font-medium text-foreground mb-1'>
 						Parameters
 					</div>
-					<div className='grid grid-cols-2 gap-x-4'>
+					<div className='gap-x-4'>
 						{def.parameters.map((p) => (
 							<ParameterControl
 								key={p.key}

@@ -11,11 +11,17 @@ import {
 import '@xyflow/react/dist/style.css';
 import {Button} from '@/components/ui/button';
 import CustomNode, {NodeData} from './Node';
-import CustomMinimap from './Minimap';
+import DraggableMinimap from './DraggableMinimap';
 import Viewport, {type ViewGraphState} from './Viewport';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useEffect, useState} from 'react';
 import CommandPalette from './CommandPalette';
 import PropertiesPanel from './PropertiesPanel';
+import {
+	ResizablePanelGroup,
+	ResizablePanel,
+	ResizableHandle,
+} from '@/components/ui/resizable';
+import {DndContext} from '@dnd-kit/core';
 
 // Define nodeTypes outside the component to prevent re-renders
 const nodeTypes: NodeTypes = {
@@ -55,7 +61,7 @@ function NodeGraphEditor() {
 	const onConnect = (params: Connection) =>
 		setEdges((eds) => addEdge(params, eds));
 
-	const addBoxNode = useCallback(() => {
+	const addBoxNode = () => {
 		const newId = `box-${Date.now()}`;
 		const newNode: Node<NodeData> = {
 			id: newId,
@@ -74,10 +80,44 @@ function NodeGraphEditor() {
 		setEdges((eds) =>
 			eds.concat({id: `e-scene-${newId}`, source: 'scene', target: newId})
 		);
-	}, [setEdges, setNodes]);
+	};
 
-	const handleParamChange = useCallback(
-		(nodeId: string, key: string, value: unknown) => {
+	const handleParamChange = (nodeId: string, key: string, value: unknown) => {
+		setNodes((prev) =>
+			prev.map((n) => {
+				if (n.id !== nodeId) return n;
+				const d = n.data;
+				return {
+					...n,
+					data: {
+						...d,
+						params: {...(d.params ?? {}), [key]: value},
+					},
+				} satisfies Node<NodeData>;
+			})
+		);
+	};
+
+	const handleLabelChange = (nodeId: string, label: string) => {
+		setNodes((prev) =>
+			prev.map((n) =>
+				n.id === nodeId
+					? ({
+							...n,
+							data: {...n.data, label},
+					  } as Node<NodeData>)
+					: n
+			)
+		);
+	};
+
+	// Attach handler to all existing nodes so parameter controls are live
+	useEffect(() => {
+		const attachParamHandler = (
+			nodeId: string,
+			key: string,
+			value: unknown
+		) => {
 			setNodes((prev) =>
 				prev.map((n) => {
 					if (n.id !== nodeId) return n;
@@ -91,35 +131,15 @@ function NodeGraphEditor() {
 					} satisfies Node<NodeData>;
 				})
 			);
-		},
-		[setNodes]
-	);
+		};
 
-	const handleLabelChange = useCallback(
-		(nodeId: string, label: string) => {
-			setNodes((prev) =>
-				prev.map((n) =>
-					n.id === nodeId
-						? ({
-								...n,
-								data: {...n.data, label},
-						  } as Node<NodeData>)
-						: n
-				)
-			);
-		},
-		[setNodes]
-	);
-
-	// Attach handler to all existing nodes so parameter controls are live
-	useEffect(() => {
 		setNodes((prev) =>
 			prev.map((n) => ({
 				...n,
-				data: {...n.data, onParamChange: handleParamChange},
+				data: {...n.data, onParamChange: attachParamHandler},
 			}))
 		);
-	}, [handleParamChange, setNodes]);
+	}, [setNodes]);
 
 	// Open palette with 'N'
 	useEffect(() => {
@@ -148,7 +168,7 @@ function NodeGraphEditor() {
 	}, []);
 
 	// Derive a very simple viewport graph state for immediate visibility
-	const viewState: ViewGraphState = useMemo(() => {
+	const viewState: ViewGraphState = (() => {
 		const hasBox = nodes.find((n) => n.data.typeKey === 'box');
 		if (!hasBox) return {};
 		type BoxParams = {
@@ -166,59 +186,79 @@ function NodeGraphEditor() {
 				color: String(params.color ?? '#4f46e5'),
 			},
 		};
-	}, [nodes]);
+	})();
 
-	const paletteCommands = useMemo(
-		() => [{id: 'new-box', label: 'Insert Box', action: addBoxNode}],
-		[addBoxNode]
-	);
+	const paletteCommands = [
+		{id: 'new-box', label: 'Insert Box', action: addBoxNode},
+	];
+
+	const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
 	return (
-		<div className='w-full h-full grid grid-cols-[1fr_1fr]'>
-			<div className='relative flex flex-col'>
-				<div className='absolute top-4 left-4 z-10 flex gap-2'>
-					<Button onClick={addBoxNode} variant='outline'>
-						New Box (N)
-					</Button>
-				</div>
-				<div className='flex-1 min-h-0'>
-					<ReactFlow
-						nodes={nodes}
-						edges={edges}
-						nodeTypes={nodeTypes}
-						onNodesChange={onNodesChange}
-						onEdgesChange={onEdgesChange}
-						onConnect={onConnect}
-						fitView
-						className='bg-background text-foreground'
-						style={{width: '100%', height: '100%'}}
-						defaultViewport={{x: 0, y: 0, zoom: 1}}
-						onSelectionChange={({nodes: selNodes}) => {
-							setSelectedNodeId(selNodes[0]?.id ?? null);
-						}}
-					>
-						<CustomMinimap />
-					</ReactFlow>
-				</div>
-				<div className='h-56 border-t border-border bg-background'>
+		<div className='w-full h-full'>
+			<ResizablePanelGroup direction='horizontal' className='h-full w-full'>
+				{/* Left side: vertical split with viewport (top) and editor (bottom) */}
+				<ResizablePanel defaultSize={70} minSize={40} className='relative'>
+					<div className='absolute top-4 left-4 z-10 flex gap-2'>
+						<Button onClick={addBoxNode} variant='outline'>
+							New Box (N)
+						</Button>
+					</div>
+					<ResizablePanelGroup direction='vertical' className='h-full w-full'>
+						{/* Top: Viewport */}
+						<ResizablePanel
+							defaultSize={50}
+							minSize={30}
+							className='border-b border-border'
+						>
+							<Viewport state={viewState} />
+						</ResizablePanel>
+						<ResizableHandle />
+						{/* Bottom: Node editor */}
+						<ResizablePanel defaultSize={50} minSize={30}>
+							<div className='relative h-full w-full'>
+								<DndContext>
+									<ReactFlow
+										nodes={nodes}
+										edges={edges}
+										nodeTypes={nodeTypes}
+										onNodesChange={onNodesChange}
+										onEdgesChange={onEdgesChange}
+										onConnect={onConnect}
+										fitView
+										className='bg-background text-foreground'
+										style={{width: '100%', height: '100%'}}
+										defaultViewport={{x: 0, y: 0, zoom: 1}}
+										onSelectionChange={({nodes: selNodes}) => {
+											setSelectedNodeId(selNodes[0]?.id ?? null);
+										}}
+									>
+										<DraggableMinimap />
+									</ReactFlow>
+								</DndContext>
+							</div>
+						</ResizablePanel>
+					</ResizablePanelGroup>
+					<CommandPalette
+						isOpen={isPaletteOpen}
+						onClose={() => setPaletteOpen(false)}
+						commands={paletteCommands}
+					/>
+				</ResizablePanel>
+				<ResizableHandle />
+				{/* Right side: full-height Properties Panel */}
+				<ResizablePanel
+					defaultSize={30}
+					minSize={20}
+					className='border-l border-border bg-background overflow-auto'
+				>
 					<PropertiesPanel
-						node={useMemo(
-							() => nodes.find((n) => n.id === selectedNodeId) ?? null,
-							[nodes, selectedNodeId]
-						)}
+						node={selectedNode}
 						onParamChange={handleParamChange}
 						onLabelChange={handleLabelChange}
 					/>
-				</div>
-				<CommandPalette
-					isOpen={isPaletteOpen}
-					onClose={() => setPaletteOpen(false)}
-					commands={paletteCommands}
-				/>
-			</div>
-			<div className='border-l border-border'>
-				<Viewport state={viewState} />
-			</div>
+				</ResizablePanel>
+			</ResizablePanelGroup>
 		</div>
 	);
 }
