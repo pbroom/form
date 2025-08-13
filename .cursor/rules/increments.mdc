@@ -1,0 +1,75 @@
+## Slash Commands – Increment Workflow
+
+# Use these in Cursor chat to automate common actions. They are instructions for the agent to execute edits/tests.
+
+/pi <id> init <focus>
+
+- Create `docs/increments/<id>/charter.md` and `docs/increments/<id>/log.md` from templates.
+- Set Focus in charter to <focus> and copy the latest Context Capsule from the previous increment if present.
+- Update `docs/.vitepress/config.ts` Process section to link new charter/log.
+- Output a short plan of actions and then perform them.
+
+/pi <id> set-goal <aim>
+
+- Update the Increment Charter’s Context Capsule Aim to <aim>.
+- Preserve other content.
+
+/effort add <title>
+
+- Append an Effort block to the current increment charter with title <title>.
+- Include empty Tasks, ACs, Tests, Steps, Estimate=S, Status=Not started.
+
+/effort task add <effort-title> <task-text>
+
+- Add a checkbox task under the Effort titled <effort-title>: <task-text>.
+
+/effort status <effort-title> <status>
+
+- Set the Status field of the Effort titled <effort-title> to one of: Not started | In progress | Blocked | Done.
+
+/il log <summary>
+
+- Append a new entry to the current increment log with:
+  - Action: <summary>
+  - Files/Areas: infer from recent edits; if unknown, leave placeholder
+  - Decisions/Issues/Learnings: infer from context; else placeholders
+  - Tests/Artifacts: link to any new tests or snapshots if available
+
+/ac list cornerstone
+
+- Summarize the cornerstone ACs from `docs/architecture/acceptance-criteria.md` most relevant to the current increment Focus.
+- Return links to the sections.
+
+/tdd plan <effort-title>
+
+- For the given Effort, generate a minimal TDD plan: tests to write first (fail), fixtures/snapshots needed, and run commands.
+- Insert under the Effort’s Tests and Steps sections in the charter.
+
+/test gen playwright <name>
+
+- Create a Playwright test skeleton `tests/e2e/<name>.spec.ts` matching the ACs in the current Effort.
+- Include `data-testid` selectors and TODOs for assertions.
+
+/run core
+
+- Propose the following commands to run non-interactively and then run them: `npm run -s build` (and `npm test` if present).
+- Report status and surface errors.
+
+/emit react <module>
+
+- Generate React/R3F TSX for the IR module named <module> using the emitter.
+- Save under `generated/<module>.tsx`, add fenced regions, and run `tsc --noEmit`.
+- Post a snippet and any type errors.
+
+/p <prompt>
+
+- Treat this as operating under the Increment Method guidelines.
+- Assume the current increment is the latest under `docs/increments/` (max `pi-*`).
+- Steps:
+  1. Identify current increment (e.g., `pi-3`), link its `charter.md` and `log.md`.
+  2. Summarize the user’s intent (<prompt>) into a one-paragraph plan tied to the increment Focus.
+  3. If needed, update the Charter: add/modify Effort, Tasks, ACs, Tests, Steps, Status.
+  4. Apply a lean TDD loop: propose tests first; then minimal implementation; then verification.
+  5. Append an entry to the Increment Log capturing actions/decisions/changes.
+  6. Keep responses concise; include code fences only for code or commands.
+- If ambiguity remains, ask one clarifying question but still propose the next concrete step.

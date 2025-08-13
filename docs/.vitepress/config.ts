@@ -43,6 +43,7 @@ export default {
 				items: [
 					{text: 'Getting Started', link: '/guides/getting-started'},
 					{text: 'Building an Adapter', link: '/guides/building-an-adapter'},
+					{text: 'Using Slash Commands', link: '/guides/using-slash-commands'},
 				],
 			},
 			{
