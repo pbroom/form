@@ -23,68 +23,68 @@
 - Effort: Node Graph Essentials
 
   - Tasks:
-    - [ ] Command palette create/select (G1)
-    - [ ] Edge connect + `targetHandle` mapping (G2)
-    - [ ] Params update viewport + state (G3)
-    - [ ] Hidden inputs + optional generic input (G4)
+    - [x] Command palette create/select (G1)
+    - [x] Edge connect + `targetHandle` mapping (G2)
+    - [x] Params update viewport + state (G3)
+    - [x] Hidden inputs + optional generic input (G4)
   - ACs: See Acceptance Criteria doc §1
   - Tests (TDD): Playwright tests for G1–G4
   - Steps: Implement UI behaviors; data-testid for selectors
   - Estimate: M
-  - Status: Not started
+  - Status: Done
 
 - Effort: IR Core
 
   - Tasks:
-    - [ ] Types + Zod schemas (IR1)
-    - [ ] Immutable ops add/connect/setProp (IR2)
-    - [ ] Deterministic serialize (IR3)
+    - [x] Types + Zod schemas (IR1)
+    - [x] Immutable ops add/connect/setProp (IR2)
+    - [x] Deterministic serialize (IR3)
   - ACs: See §2
   - Tests: Unit (schema pass/fail), ops invariants, snapshot JSON
   - Steps: Add `src/lib/ir/{types,schema,ops}.ts`
   - Estimate: M
-  - Status: Not started
+  - Status: Done
 
 - Effort: Codegen (React/R3F)
 
   - Tasks:
-    - [ ] Minimal emitter with fences (CG1)
-    - [ ] Typecheck emitted module (CG2)
+    - [x] Minimal emitter with fences (CG1)
+    - [x] Typecheck emitted module (CG2)
   - ACs: See §4
   - Tests: Snapshot TSX; `tsc --noEmit` on output
   - Steps: `src/lib/codegen/react/index.ts` walk TreeLayer
   - Estimate: M
-  - Status: Not started
+  - Status: Done
 
 - Effort: Project Save/Load
 
   - Tasks:
-    - [ ] Save → Load round-trip service (PF1)
+    - [x] Save → Load round-trip service (PF1)
   - ACs: See §5
   - Tests: Unit round-trip; e2e stub
   - Steps: `src/lib/project/{save,load}.ts`
   - Estimate: S
-  - Status: Not started
+  - Status: Done
 
 - Effort: Adapter v1 (drei subset)
 
   - Tasks:
-    - [ ] Template schema + validation (AD1)
-    - [ ] Curated subset (≥5) + mapper (AD2)
+    - [x] Template schema + validation (AD1)
+    - [x] Curated subset (≥5) + mapper (AD2)
   - ACs: See §3
   - Tests: Schema validation; palette count; mapping unit
   - Steps: `scripts/adapters/generate-drei.ts`, `generated/*.registry.json`
   - Estimate: M
-  - Status: Not started
+  - Status: Done
 
 - Effort: E2E Quickstart
   - Tasks:
-    - [ ] Flow: quickstart → render → export code (E2E1)
+    - [x] Flow: quickstart → render → export code (E2E1)
   - ACs: See §9
   - Tests: Playwright script + code snapshot
   - Steps: Compose previous efforts into e2e
   - Estimate: M
-  - Status: Not started
+  - Status: Done
 
 ## Scope Fence (Out of Scope)
 

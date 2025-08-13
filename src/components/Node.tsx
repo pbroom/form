@@ -1,10 +1,10 @@
 import {Position, NodeProps, useStore} from '@xyflow/react';
 import {cn} from '@/lib/utils';
 import CustomHandle from './Handle';
-import {getNodeDefinition, NODE_DEFINITIONS} from '@/lib/node-registry';
+import {getNodeDefinition} from '@/lib/node-registry';
 
 export type NodeData = {
-	typeKey: keyof typeof NODE_DEFINITIONS;
+	typeKey: string;
 	label?: string;
 	params?: Record<string, unknown>;
 	onParamChange?: (nodeId: string, key: string, value: unknown) => void;
@@ -30,6 +30,8 @@ function CustomNode({id, data, selected}: NodeProps) {
 
 	return (
 		<div
+			data-testid={`node-${String(d.typeKey)}-${String(id)}`}
+			data-selected={selected ? 'true' : 'false'}
 			className={cn(
 				'px-3 py-2 rounded-md outline outline-secondary text-left',
 				'min-w-[180px]',
@@ -53,6 +55,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 									type='target'
 									position={Position.Left}
 									id={p.key}
+									data-testid={`handle-target-param-${p.key}`}
 									className='-left-3'
 								/>
 								<div className='text-[11px] text-muted-foreground'>
@@ -69,6 +72,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 								position={Position.Left}
 								id='__new__'
 								variant='generic'
+								data-testid='handle-target-generic'
 								className='-left-3!'
 							/>
 							<div className='text-[10px] text-muted-foreground'>Input</div>
@@ -77,7 +81,11 @@ function CustomNode({id, data, selected}: NodeProps) {
 				</div>
 			) : null}
 
-			<CustomHandle type='source' position={Position.Right} />
+			<CustomHandle
+				type='source'
+				position={Position.Right}
+				data-testid='handle-source'
+			/>
 		</div>
 	);
 }

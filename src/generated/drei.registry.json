@@ -1,0 +1,64 @@
+{
+	"name": "drei-subset",
+	"version": "0.1.0",
+	"nodes": [
+		{
+			"key": "orbitControls",
+			"label": "OrbitControls",
+			"category": "utility",
+			"parameters": []
+		},
+		{
+			"key": "directionalLight",
+			"label": "DirectionalLight",
+			"category": "light",
+			"parameters": [
+				{
+					"key": "intensity",
+					"label": "Intensity",
+					"type": "number",
+					"defaultValue": 1
+				}
+			]
+		},
+		{
+			"key": "ambientLight",
+			"label": "AmbientLight",
+			"category": "light",
+			"parameters": [
+				{
+					"key": "intensity",
+					"label": "Intensity",
+					"type": "number",
+					"defaultValue": 0.7
+				}
+			]
+		},
+		{
+			"key": "mesh",
+			"label": "Mesh",
+			"category": "mesh",
+			"parameters": [
+				{
+					"key": "name",
+					"label": "Name",
+					"type": "string",
+					"defaultValue": "Mesh"
+				}
+			]
+		},
+		{
+			"key": "sphere",
+			"label": "Sphere",
+			"category": "geometry",
+			"parameters": [
+				{
+					"key": "radius",
+					"label": "Radius",
+					"type": "number",
+					"defaultValue": 1
+				}
+			]
+		}
+	]
+}

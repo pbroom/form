@@ -93,14 +93,24 @@ export default function DraggableMinimap({
 
 		if (almostEq(nx, prev.right)) nx = nextConstraints.right;
 		else if (almostEq(nx, prev.left)) nx = nextConstraints.left;
-		else nx = clamp(nx, nextConstraints.left, nextConstraints.right);
+		else {
+			// On resize, anchor to nearest side for stability
+			const distLeft = Math.abs(nx - nextConstraints.left);
+			const distRight = Math.abs(nextConstraints.right - nx);
+			nx = distLeft <= distRight ? nextConstraints.left : nextConstraints.right;
+		}
 
 		if (almostEq(ny, prev.bottom)) ny = nextConstraints.bottom;
 		else if (almostEq(ny, prev.top)) ny = nextConstraints.top;
-		else ny = clamp(ny, nextConstraints.top, nextConstraints.bottom);
+		else {
+			const distTop = Math.abs(ny - nextConstraints.top);
+			const distBottom = Math.abs(nextConstraints.bottom - ny);
+			ny = distTop <= distBottom ? nextConstraints.top : nextConstraints.bottom;
+		}
 
-		x.set(nx);
-		y.set(ny);
+		// Stabilize by snapping to integer pixel positions
+		x.set(Math.round(nx));
+		y.set(Math.round(ny));
 
 		prevConstraintsRef.current = nextConstraints;
 		constraintsRef.current = nextConstraints;
@@ -126,9 +136,7 @@ export default function DraggableMinimap({
 			Math.abs(y.get() - c.top) < Math.abs(y.get() - c.bottom)
 				? c.top
 				: c.bottom;
-		const spring: SpringCfg = prefersReduced
-			? {duration: 0.001}
-			: {type: 'spring', stiffness: 520, damping: 42};
+		const spring: SpringCfg = {duration: 0.001};
 		animate(x, tx, spring);
 		animate(y, ty, spring);
 	};

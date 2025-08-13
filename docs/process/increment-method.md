@@ -29,7 +29,8 @@ Contains:
 
 ## Increment Log (IL)
 
-- Short entries per meaningful change: action, files touched, decisions, issues, learnings, links to tests
+- Each entry starts with a 1–2 sentence Summary in plain, concise English
+- Short bullets: action, files touched, decisions, issues, learnings, tests/artifacts
 - Keep it terse; 3–6 bullets per entry
 
 ## TDD Loop (for each task)

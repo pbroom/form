@@ -3,10 +3,11 @@ import {defineConfig} from '@playwright/test';
 export default defineConfig({
 	testDir: './tests',
 	testIgnore: ['**/unit/**'],
-	retries: process.env.CI ? 2 : 0,
+	retries: 0,
 	use: {
 		baseURL: 'http://localhost:5173',
-		trace: 'on-first-retry',
+		trace: 'retain-on-failure',
+		video: 'on',
 	},
 	webServer: {
 		command: 'npm run dev',
@@ -15,4 +16,5 @@ export default defineConfig({
 		stdout: 'pipe',
 		stderr: 'pipe',
 	},
+	outputDir: 'test-results/demo',
 });

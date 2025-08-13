@@ -15,6 +15,7 @@ import Viewport, {type ViewGraphState} from './Viewport';
 import {useEffect, useState} from 'react';
 import CommandPalette from './CommandPalette';
 import PropertiesPanel from './PropertiesPanel';
+import CodeExportModal from './CodeExportModal';
 import {
 	ResizablePanelGroup,
 	ResizablePanel,
@@ -22,11 +23,20 @@ import {
 } from '@/components/ui/resizable';
 import {DndContext} from '@dnd-kit/core';
 import {getNodeDefinition} from '@/lib/node-registry';
+// Adapter imports removed (using curated list)
 
 // Define nodeTypes outside the component to prevent re-renders
 const nodeTypes: NodeTypes = {
 	custom: CustomNode,
 };
+
+const curatedAdapterList = [
+	{key: 'ambientLight', label: 'AmbientLight'},
+	{key: 'directionalLight', label: 'DirectionalLight'},
+	{key: 'orbitControls', label: 'OrbitControls'},
+	{key: 'mesh', label: 'Mesh'},
+	{key: 'sphere', label: 'Sphere'},
+];
 
 const initialNodes: Node<NodeData>[] = [
 	{
@@ -55,6 +65,7 @@ function NodeGraphEditor() {
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 	const [isPaletteOpen, setPaletteOpen] = useState(false);
 	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+	const [isExportOpen, setExportOpen] = useState(false);
 
 	const onConnect = (params: Connection) =>
 		setEdges((eds) => {
@@ -63,7 +74,7 @@ function NodeGraphEditor() {
 			if (!targetHandle || targetHandle === '__new__') {
 				const targetNode = nodes.find((n) => n.id === params.target);
 				if (targetNode) {
-					const def = getNodeDefinition(targetNode.data.typeKey);
+					const def = getNodeDefinition(String(targetNode.data.typeKey));
 					if (def && def.parameters?.length) {
 						const alreadyConnectedKeys = eds
 							.filter(
@@ -88,6 +99,15 @@ function NodeGraphEditor() {
 			return addEdge({...params, targetHandle}, eds);
 		});
 
+	const connectProgrammatically = (sourceId: string, targetId: string) => {
+		onConnect({
+			source: sourceId,
+			target: targetId,
+			sourceHandle: null,
+			targetHandle: '__new__',
+		});
+	};
+
 	const addBoxNode = () => {
 		const newId = `box-${Date.now()}`;
 		const newNode: Node<NodeData> = {
@@ -103,7 +123,13 @@ function NodeGraphEditor() {
 				y: Math.random() * 400,
 			},
 		};
-		setNodes((nds) => nds.concat(newNode));
+		setNodes((nds) =>
+			nds
+				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.concat({...newNode, selected: true} as Node<NodeData>)
+		);
+		// Select the newly created node
+		setSelectedNodeId(newId);
 		// Do not auto-connect new nodes to the scene
 	};
 
@@ -213,8 +239,46 @@ function NodeGraphEditor() {
 		};
 	})();
 
+	const adapterCommands = curatedAdapterList.map((d) => ({
+		id: `new-${d.key}`,
+		label: `Insert ${d.label}`,
+		action: () => {
+			const newId = `${d.key}-${Date.now()}`;
+			const newNode: Node<NodeData> = {
+				id: newId,
+				type: 'custom',
+				data: {typeKey: d.key, label: d.label},
+				position: {x: Math.random() * 400, y: Math.random() * 400},
+			};
+			setNodes((nds) => nds.concat(newNode));
+			setSelectedNodeId(newId);
+		},
+	}));
+
 	const paletteCommands = [
 		{id: 'new-box', label: 'Insert Box', action: addBoxNode},
+		...adapterCommands,
+		{
+			id: 'export-code',
+			label: 'Export Code',
+			action: () => setExportOpen(true),
+		},
+		...(import.meta.env.MODE !== 'production'
+			? [
+					{
+						id: 'connect-last-to-first-box',
+						label: 'Connect last box → first box (test)',
+						action: () => {
+							const boxNodes = nodes.filter((n) => n.data.typeKey === 'box');
+							if (boxNodes.length >= 2) {
+								const first = boxNodes[0];
+								const last = boxNodes[boxNodes.length - 1];
+								connectProgrammatically(last.id, first.id);
+							}
+						},
+					},
+			  ]
+			: []),
 	];
 
 	const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
@@ -263,6 +327,10 @@ function NodeGraphEditor() {
 						isOpen={isPaletteOpen}
 						onClose={() => setPaletteOpen(false)}
 						commands={paletteCommands}
+					/>
+					<CodeExportModal
+						isOpen={isExportOpen}
+						onClose={() => setExportOpen(false)}
 					/>
 				</ResizablePanel>
 				<ResizableHandle />

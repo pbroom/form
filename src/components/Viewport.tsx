@@ -30,7 +30,7 @@ function BoxMesh({width, height, depth, color}: BoxParams) {
 
 export default function Viewport({state}: {state: ViewGraphState}) {
 	return (
-		<div className='w-full h-full bg-secondary'>
+		<div className='w-full h-full bg-secondary' data-testid='viewport'>
 			<Canvas camera={{position: [2.5, 2, 4], fov: 50}}>
 				{/* Lights */}
 				<ambientLight intensity={0.7} />

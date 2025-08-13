@@ -46,7 +46,10 @@ export default function CommandPalette({
 
 	if (!isOpen) return null;
 	return (
-		<div className='fixed inset-0 z-50 flex items-start justify-center pt-24'>
+		<div
+			className='fixed inset-0 z-50 flex items-start justify-center pt-24'
+			data-testid='command-palette'
+		>
 			<div className='absolute inset-0 bg-black/40' onClick={onClose} />
 			<div className='relative w-full max-w-lg rounded-lg border border-border bg-card shadow-xl'>
 				<Command className='rounded-lg border shadow-md'>
@@ -62,6 +65,7 @@ export default function CommandPalette({
 							{filtered.map((cmd) => (
 								<CommandItem
 									key={cmd.id}
+									data-testid={`command-item-${cmd.id}`}
 									onSelect={() => {
 										cmd.action();
 										onClose();

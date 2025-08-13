@@ -4,6 +4,8 @@ Template for short progress notes per meaningful change.
 
 ## Entry {{n}}
 
+{{Summary}}
+
 - Action:
 - Files/Areas:
 - Decisions:

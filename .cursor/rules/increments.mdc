@@ -30,9 +30,12 @@
 /il log <summary>
 
 - Append a new entry to the current increment log with:
+  - Summary: one to two sentences in plain, concise English that summarize the entry
   - Action: <summary>
   - Files/Areas: infer from recent edits; if unknown, leave placeholder
-  - Decisions/Issues/Learnings: infer from context; else placeholders
+  - Decisions: infer from context; else placeholder
+  - Issues/Risks: infer or placeholder
+  - Learnings: infer or placeholder
   - Tests/Artifacts: link to any new tests or snapshots if available
 
 /ac list cornerstone
