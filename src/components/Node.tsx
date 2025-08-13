@@ -1,12 +1,7 @@
-import {Position, NodeProps} from '@xyflow/react';
+import {Position, NodeProps, useStore} from '@xyflow/react';
 import {cn} from '@/lib/utils';
 import CustomHandle from './Handle';
-import {
-	getNodeDefinition,
-	NODE_DEFINITIONS,
-	type NodeParameterDefinition,
-} from '@/lib/node-registry';
-import DraggableNumberInput from '@/components/ui/draggable-number-input';
+import {getNodeDefinition, NODE_DEFINITIONS} from '@/lib/node-registry';
 
 export type NodeData = {
 	typeKey: keyof typeof NODE_DEFINITIONS;
@@ -14,67 +9,6 @@ export type NodeData = {
 	params?: Record<string, unknown>;
 	onParamChange?: (nodeId: string, key: string, value: unknown) => void;
 };
-
-function ParameterControl({
-	def,
-	value,
-	onChange,
-}: {
-	def: NodeParameterDefinition;
-	value: unknown;
-	onChange: (v: unknown) => void;
-}) {
-	if (def.type === 'number') {
-		return (
-			<DraggableNumberInput
-				label={def.label}
-				value={Number(value ?? def.defaultValue)}
-				min={def.min}
-				max={def.max}
-				step={def.step}
-				onChange={onChange}
-				width='sm'
-			/>
-		);
-	}
-	if (def.type === 'color') {
-		return (
-			<label className='flex items-center justify-between gap-2 text-xs py-1'>
-				<span className='text-muted-foreground'>{def.label}</span>
-				<input
-					className='w-24 rounded-md'
-					type='color'
-					value={(value as string) ?? (def.defaultValue as string)}
-					onChange={(e) => onChange(e.target.value)}
-				/>
-			</label>
-		);
-	}
-	if (def.type === 'boolean') {
-		return (
-			<label className='flex items-center justify-between gap-2 text-xs py-1'>
-				<span className='text-muted-foreground'>{def.label}</span>
-				<input
-					type='checkbox'
-					checked={Boolean(value ?? def.defaultValue)}
-					onChange={(e) => onChange(e.target.checked)}
-				/>
-			</label>
-		);
-	}
-	// string
-	return (
-		<label className='flex items-center justify-between gap-2 text-xs py-1'>
-			<span className='text-muted-foreground'>{def.label}</span>
-			<input
-				className='w-24 rounded-md bg-secondary px-2 py-1 text-right'
-				type='text'
-				value={String(value ?? def.defaultValue ?? '')}
-				onChange={(e) => onChange(e.target.value)}
-			/>
-		</label>
-	);
-}
 
 function CustomNode({id, data, selected}: NodeProps) {
 	const d = data as NodeData;
@@ -87,6 +21,13 @@ function CustomNode({id, data, selected}: NodeProps) {
 		utility: 'bg-[#1b1f23]',
 	};
 
+	// Determine which parameter handles are currently connected to this node
+	const connectedParamKeys = useStore((s) =>
+		s.edges
+			.filter((e) => e.target === String(id) && Boolean(e.targetHandle))
+			.map((e) => String(e.targetHandle))
+	);
+
 	return (
 		<div
 			className={cn(
@@ -97,22 +38,42 @@ function CustomNode({id, data, selected}: NodeProps) {
 				bgByAppearance[appearance]
 			)}
 		>
-			<CustomHandle type='target' position={Position.Left} />
-
 			<div className='text-foreground text-xs font-medium pb-1'>
 				{d.label ?? def?.label ?? 'Node'}
 			</div>
 
 			{def?.parameters?.length ? (
-				<div className='divide-y divide-border/60'>
-					{def.parameters.map((p) => (
-						<ParameterControl
-							key={p.key}
-							def={p}
-							value={d.params?.[p.key]}
-							onChange={(v) => d.onParamChange?.(String(id), p.key, v)}
-						/>
-					))}
+				<div className='space-y-1 pt-1'>
+					{/* Render handles only for parameters that already have inbound connections */}
+					{def.parameters
+						.filter((p) => connectedParamKeys.includes(p.key))
+						.map((p) => (
+							<div key={p.key} className='relative flex items-center gap-2'>
+								<CustomHandle
+									type='target'
+									position={Position.Left}
+									id={p.key}
+									className='-left-3'
+								/>
+								<div className='text-[11px] text-muted-foreground'>
+									{p.label}
+								</div>
+							</div>
+						))}
+
+					{/* Generic add handle, optionally enabled for node types that support it */}
+					{def.parameters.some((p) => !connectedParamKeys.includes(p.key)) ? (
+						<div className='relative flex items-center gap-2'>
+							<CustomHandle
+								type='target'
+								position={Position.Left}
+								id='__new__'
+								variant='generic'
+								className='-left-3!'
+							/>
+							<div className='text-[10px] text-muted-foreground'>Input</div>
+						</div>
+					) : null}
 				</div>
 			) : null}
 

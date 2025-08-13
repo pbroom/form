@@ -9,7 +9,6 @@ import {
 	NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {Button} from '@/components/ui/button';
 import CustomNode, {NodeData} from './Node';
 import DraggableMinimap from './DraggableMinimap';
 import Viewport, {type ViewGraphState} from './Viewport';
@@ -22,6 +21,7 @@ import {
 	ResizableHandle,
 } from '@/components/ui/resizable';
 import {DndContext} from '@dnd-kit/core';
+import {getNodeDefinition} from '@/lib/node-registry';
 
 // Define nodeTypes outside the component to prevent re-renders
 const nodeTypes: NodeTypes = {
@@ -33,7 +33,7 @@ const initialNodes: Node<NodeData>[] = [
 		id: 'scene',
 		type: 'custom',
 		data: {typeKey: 'scene', label: 'Scene'},
-		position: {x: 250, y: 25},
+		position: {x: 320, y: 25},
 	},
 	{
 		id: 'box-1',
@@ -43,13 +43,11 @@ const initialNodes: Node<NodeData>[] = [
 			label: 'Box',
 			params: {width: 1, height: 1, depth: 1, color: '#4f46e5'},
 		},
-		position: {x: 100, y: 180},
+		position: {x: 80, y: 25},
 	},
 ];
 
-const initialEdges: Edge[] = [
-	{id: 'escene-box1', source: 'scene', target: 'box-1'},
-];
+const initialEdges: Edge[] = [];
 
 function NodeGraphEditor() {
 	const [nodes, setNodes, onNodesChange] =
@@ -59,7 +57,36 @@ function NodeGraphEditor() {
 	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
 	const onConnect = (params: Connection) =>
-		setEdges((eds) => addEdge(params, eds));
+		setEdges((eds) => {
+			// If connecting to the generic "new" handle or no handle, pick the first available parameter
+			let targetHandle = params.targetHandle;
+			if (!targetHandle || targetHandle === '__new__') {
+				const targetNode = nodes.find((n) => n.id === params.target);
+				if (targetNode) {
+					const def = getNodeDefinition(targetNode.data.typeKey);
+					if (def && def.parameters?.length) {
+						const alreadyConnectedKeys = eds
+							.filter(
+								(e) => e.target === params.target && Boolean(e.targetHandle)
+							)
+							.map((e) => String(e.targetHandle));
+						const nextParam = def.parameters.find(
+							(p) => !alreadyConnectedKeys.includes(p.key)
+						);
+						if (nextParam) {
+							targetHandle = nextParam.key;
+						} else {
+							// No available parameter; skip creating the edge
+							return eds;
+						}
+					} else {
+						// No parameters defined; skip
+						return eds;
+					}
+				}
+			}
+			return addEdge({...params, targetHandle}, eds);
+		});
 
 	const addBoxNode = () => {
 		const newId = `box-${Date.now()}`;
@@ -77,9 +104,7 @@ function NodeGraphEditor() {
 			},
 		};
 		setNodes((nds) => nds.concat(newNode));
-		setEdges((eds) =>
-			eds.concat({id: `e-scene-${newId}`, source: 'scene', target: newId})
-		);
+		// Do not auto-connect new nodes to the scene
 	};
 
 	const handleParamChange = (nodeId: string, key: string, value: unknown) => {
@@ -198,12 +223,7 @@ function NodeGraphEditor() {
 		<div className='w-full h-full'>
 			<ResizablePanelGroup direction='horizontal' className='h-full w-full'>
 				{/* Left side: vertical split with viewport (top) and editor (bottom) */}
-				<ResizablePanel defaultSize={70} minSize={40} className='relative'>
-					<div className='absolute top-4 left-4 z-10 flex gap-2'>
-						<Button onClick={addBoxNode} variant='outline'>
-							New Box (N)
-						</Button>
-					</div>
+				<ResizablePanel defaultSize={80} minSize={40} className='relative'>
 					<ResizablePanelGroup direction='vertical' className='h-full w-full'>
 						{/* Top: Viewport */}
 						<ResizablePanel
@@ -248,7 +268,7 @@ function NodeGraphEditor() {
 				<ResizableHandle />
 				{/* Right side: full-height Properties Panel */}
 				<ResizablePanel
-					defaultSize={30}
+					defaultSize={20}
 					minSize={20}
 					className='border-l border-border bg-background overflow-auto'
 				>
