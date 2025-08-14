@@ -49,3 +49,8 @@ Contains:
 ## Templates
 
 See `docs/increments/_templates/charter.template.md` and `docs/increments/_templates/log.template.md`.
+
+## Project Log
+
+- At the end of each increment, update `docs/project-log.md` with a concise, human-readable summary (outcomes, artifacts, decisions, learnings)
+- Keep increment-level details in `docs/increments/<id>/log.md`; the project log is a top-level, per-increment changelog

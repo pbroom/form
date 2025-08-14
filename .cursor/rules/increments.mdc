@@ -76,3 +76,13 @@
   5. Append an entry to the Increment Log capturing actions/decisions/changes.
   6. Keep responses concise; include code fences only for code or commands.
 - If ambiguity remains, ask one clarifying question but still propose the next concrete step.
+
+/pl log <summary>
+
+- Append a new entry to the project-level log at `docs/project-log.md` with:
+  - Entry header: latest increment id (e.g., PI-1) + date
+  - Summary: <summary>
+  - Artifacts: link to increment charter/log and any demo assets
+  - Major efforts and status: pulled from the charter
+  - Tests at close: unit and e2e counts
+  - Decisions/Learnings/Risks: summarize from increment log

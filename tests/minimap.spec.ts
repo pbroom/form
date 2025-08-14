@@ -53,7 +53,7 @@ test('anchors to nearest corner when frame resizes', async ({page}) => {
 	await page.waitForTimeout(60);
 	// resize and re-read flow box
 	await page.setViewportSize({width: 1200, height: 800});
-	await page.waitForTimeout(120);
+	await page.waitForTimeout(200);
 	const flow = await getFlowBox(page);
 	const mini = await getWrapperBox(page);
 	expect(within(mini.x, flow.x + 12, 16)).toBeTruthy();

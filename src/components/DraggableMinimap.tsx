@@ -13,10 +13,6 @@ type DraggableMinimapProps = {
 	padding?: number;
 };
 
-function clamp(value: number, min: number, max: number): number {
-	return Math.max(min, Math.min(max, value));
-}
-
 type SpringCfg =
 	| {type: 'spring'; stiffness: number; damping: number}
 	| {duration: number};
@@ -136,7 +132,9 @@ export default function DraggableMinimap({
 			Math.abs(y.get() - c.top) < Math.abs(y.get() - c.bottom)
 				? c.top
 				: c.bottom;
-		const spring: SpringCfg = {duration: 0.001};
+		const spring: SpringCfg = prefersReduced
+			? {duration: 0.001}
+			: {type: 'spring', stiffness: 520, damping: 42};
 		animate(x, tx, spring);
 		animate(y, ty, spring);
 	};
