@@ -7,7 +7,9 @@ import {
 	useNodesState,
 	useEdgesState,
 	NodeTypes,
+	type OnConnectStart,
 } from '@xyflow/react';
+import type {GraphParameterValue} from '@/lib/ir/types';
 import '@xyflow/react/dist/style.css';
 import CustomNode, {NodeData} from './Node';
 import DraggableMinimap from './DraggableMinimap';
@@ -16,6 +18,12 @@ import {useEffect, useState} from 'react';
 import CommandPalette from './CommandPalette';
 import PropertiesPanel from './PropertiesPanel';
 import CodeExportModal from './CodeExportModal';
+import ParameterConnectionOverlay from './ParameterConnectionOverlay';
+import {
+	validateConnection,
+	validateParameterValue,
+} from '@/lib/validation/graph-validation';
+import type {ValidationError} from '@/lib/node-registry';
 import {
 	ResizablePanelGroup,
 	ResizablePanel,
@@ -36,9 +44,21 @@ const curatedAdapterList = [
 	{key: 'orbitControls', label: 'OrbitControls'},
 	{key: 'mesh', label: 'Mesh'},
 	{key: 'sphere', label: 'Sphere'},
+	{key: 'numberConst', label: 'Number'},
+	{key: 'colorConst', label: 'Color'},
+	{key: 'booleanConst', label: 'Boolean'},
+	{key: 'stringConst', label: 'String'},
+	{key: 'add', label: 'Add'},
+	{key: 'multiply', label: 'Multiply'},
 ];
 
 const initialNodes: Node<NodeData>[] = [
+	{
+		id: 'render',
+		type: 'custom',
+		data: {typeKey: 'render', label: 'Render'},
+		position: {x: 560, y: 25},
+	},
 	{
 		id: 'scene',
 		type: 'custom',
@@ -57,7 +77,22 @@ const initialNodes: Node<NodeData>[] = [
 	},
 ];
 
-const initialEdges: Edge[] = [];
+const initialEdges: Edge[] = [
+	// Connect scene to render so something shows by default
+	{
+		id: 'scene-to-render',
+		source: 'scene',
+		target: 'render',
+		targetHandle: 'input',
+	},
+	// Connect box to scene for a complete working example
+	{
+		id: 'box-to-scene',
+		source: 'box-1',
+		target: 'scene',
+		targetHandle: 'input',
+	},
+];
 
 function NodeGraphEditor() {
 	const [nodes, setNodes, onNodesChange] =
@@ -67,8 +102,126 @@ function NodeGraphEditor() {
 	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 	const [isExportOpen, setExportOpen] = useState(false);
 
+	// Smart connection workflow state
+	const [connectionMode, setConnectionMode] = useState<{
+		sourceNodeId: string;
+		sourceHandle?: string;
+		targetNodeId?: string;
+		targetPosition?: {x: number; y: number};
+	} | null>(null);
+
+	// Validation state
+	const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+		[]
+	);
+
+	// Handle smart connection workflow
+	const onConnectionStart: OnConnectStart = (_event, params) => {
+		setConnectionMode({
+			sourceNodeId: params.nodeId || '',
+			sourceHandle: params.handleId || undefined,
+		});
+	};
+
+	const onConnectionEnd = () => {
+		// Reset connection mode if connection wasn't completed
+		setConnectionMode(null);
+	};
+
+	const onNodeMouseEnter = (event: React.MouseEvent, node: Node<NodeData>) => {
+		if (connectionMode && connectionMode.sourceNodeId !== node.id) {
+			const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+			// Use screen coordinates directly for the overlay positioning
+			const screenPosition = {
+				x: rect.left,
+				y: rect.top,
+			};
+
+			setConnectionMode((prev) =>
+				prev
+					? {
+							...prev,
+							targetNodeId: node.id,
+							targetPosition: screenPosition,
+					  }
+					: null
+			);
+		}
+	};
+
+	const onNodeMouseLeave = () => {
+		if (connectionMode) {
+			setConnectionMode((prev) =>
+				prev
+					? {
+							...prev,
+							targetNodeId: undefined,
+							targetPosition: undefined,
+					  }
+					: null
+			);
+		}
+	};
+
+	const onParameterSelect = (parameterKey: string) => {
+		if (connectionMode && connectionMode.targetNodeId) {
+			const sourceNode = nodes.find(
+				(n) => n.id === connectionMode.sourceNodeId
+			);
+			const targetNode = nodes.find(
+				(n) => n.id === connectionMode.targetNodeId
+			);
+
+			if (sourceNode && targetNode) {
+				// Validate the connection before creating it
+				const validationError = validateConnection(
+					sourceNode,
+					targetNode,
+					parameterKey
+				);
+
+				if (validationError) {
+					// Show validation error
+					setValidationErrors((prev) => [...prev, validationError]);
+					console.warn(
+						'Connection validation failed:',
+						validationError.message
+					);
+				} else {
+					// Prevent self-connections
+					if (connectionMode.sourceNodeId === connectionMode.targetNodeId) {
+						console.warn('Self-connections are not allowed');
+						return;
+					}
+
+					// Create the connection without an edge label (UX: labels belong to handles)
+					const params: Connection = {
+						source: connectionMode.sourceNodeId,
+						target: connectionMode.targetNodeId,
+						sourceHandle: connectionMode.sourceHandle || null,
+						targetHandle: parameterKey,
+					};
+
+					setEdges((eds) => addEdge(params, eds));
+				}
+			}
+		}
+
+		setConnectionMode(null);
+	};
+
+	const onCancelConnection = () => {
+		setConnectionMode(null);
+	};
+
 	const onConnect = (params: Connection) =>
 		setEdges((eds) => {
+			// Prevent self-connections
+			if (params.source === params.target) {
+				console.warn('Self-connections are not allowed');
+				return eds;
+			}
+
 			// If connecting to the generic "new" handle or no handle, pick the first available parameter
 			let targetHandle = params.targetHandle;
 			if (!targetHandle || targetHandle === '__new__') {
@@ -133,7 +286,81 @@ function NodeGraphEditor() {
 		// Do not auto-connect new nodes to the scene
 	};
 
+	const addRenderNode = () => {
+		const newId = `render-${Date.now()}`;
+		const newNode: Node<NodeData> = {
+			id: newId,
+			type: 'custom',
+			data: {
+				typeKey: 'render',
+				label: 'Render',
+				params: {},
+			},
+			position: {
+				x: Math.random() * 400,
+				y: Math.random() * 400,
+			},
+		};
+		setNodes((nds) =>
+			nds
+				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.concat({...newNode, selected: true} as Node<NodeData>)
+		);
+		setSelectedNodeId(newId);
+	};
+
+	const addCameraNode = () => {
+		const newId = `camera-${Date.now()}`;
+		const newNode: Node<NodeData> = {
+			id: newId,
+			type: 'custom',
+			data: {
+				typeKey: 'camera',
+				label: 'Camera',
+				params: {fov: 50},
+			},
+			position: {
+				x: Math.random() * 400,
+				y: Math.random() * 400,
+			},
+		};
+		setNodes((nds) =>
+			nds
+				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.concat({...newNode, selected: true} as Node<NodeData>)
+		);
+		setSelectedNodeId(newId);
+	};
+
 	const handleParamChange = (nodeId: string, key: string, value: unknown) => {
+		// Validate parameter value before applying
+		const node = nodes.find((n) => n.id === nodeId);
+		if (node) {
+			const def = getNodeDefinition(node.data.typeKey);
+			const paramDef = def?.parameters?.find((p) => p.key === key);
+
+			if (paramDef) {
+				const validationError = validateParameterValue(value, paramDef);
+				if (validationError) {
+					validationError.nodeId = nodeId;
+					setValidationErrors((prev) => {
+						// Remove any existing error for this parameter
+						const filtered = prev.filter(
+							(e) => !(e.nodeId === nodeId && e.parameterKey === key)
+						);
+						return [...filtered, validationError];
+					});
+					console.warn('Parameter validation failed:', validationError.message);
+					return; // Don't apply invalid value
+				} else {
+					// Clear any existing validation error for this parameter
+					setValidationErrors((prev) =>
+						prev.filter((e) => !(e.nodeId === nodeId && e.parameterKey === key))
+					);
+				}
+			}
+		}
+
 		setNodes((prev) =>
 			prev.map((n) => {
 				if (n.id !== nodeId) return n;
@@ -192,7 +419,7 @@ function NodeGraphEditor() {
 		);
 	}, [setNodes]);
 
-	// Open palette with 'N'
+	// Keyboard shortcuts: Q for node palette, Cmd+K/Cmd+/ for command palette
 	useEffect(() => {
 		const isTextInput = (el: EventTarget | null) => {
 			if (!(el instanceof HTMLElement)) return false;
@@ -200,10 +427,21 @@ function NodeGraphEditor() {
 			return tag === 'input' || tag === 'textarea' || el.isContentEditable;
 		};
 		const onKey = (e: KeyboardEvent) => {
+			// Node palette with Q key (focused on node insertion)
 			if (
-				e.key.toLowerCase() === 'n' &&
+				e.key.toLowerCase() === 'q' &&
 				!e.metaKey &&
 				!e.ctrlKey &&
+				!isTextInput(e.target)
+			) {
+				e.preventDefault();
+				e.stopPropagation();
+				setPaletteOpen(true);
+			}
+			// Command palette with Cmd+K or Cmd+/ (all commands)
+			if (
+				(e.key.toLowerCase() === 'k' || e.key === '/') &&
+				(e.metaKey || e.ctrlKey) &&
 				!isTextInput(e.target)
 			) {
 				e.preventDefault();
@@ -218,25 +456,120 @@ function NodeGraphEditor() {
 			} as AddEventListenerOptions);
 	}, []);
 
-	// Derive a very simple viewport graph state for immediate visibility
+	// Convert current graph to IR for viewport rendering
 	const viewState: ViewGraphState = (() => {
-		const hasBox = nodes.find((n) => n.data.typeKey === 'box');
-		if (!hasBox) return {};
-		type BoxParams = {
-			width?: number;
-			height?: number;
-			depth?: number;
-			color?: string;
+		// Compute effective parameters with edge-driven value flow (e.g., constants → params)
+		const nodeMap = new Map(nodes.map((n) => [n.id, n] as const));
+		const effectiveParamsByNode = new Map<
+			string,
+			Record<string, GraphParameterValue>
+		>();
+
+		for (const n of nodes) {
+			effectiveParamsByNode.set(n.id, {
+				...((n.data.params || {}) as Record<string, GraphParameterValue>),
+			});
+		}
+
+		// Helper: recursively compute output for utility nodes
+		const getNodeOutput = (nodeId: string): GraphParameterValue | undefined => {
+			const node = nodeMap.get(nodeId);
+			if (!node) return undefined;
+			const type = String(node.data.typeKey);
+			const base = (node.data.params || {}) as Record<
+				string,
+				GraphParameterValue
+			>;
+			if (
+				type === 'numberConst' ||
+				type === 'colorConst' ||
+				type === 'booleanConst' ||
+				type === 'stringConst'
+			) {
+				return (base.value ?? null) as GraphParameterValue;
+			}
+			if (type === 'add' || type === 'multiply') {
+				const incoming = edges.filter(
+					(ed) => ed.target === nodeId && ed.targetHandle
+				);
+				const aEdge = incoming.find((ed) => ed.targetHandle === 'a');
+				const bEdge = incoming.find((ed) => ed.targetHandle === 'b');
+				const a = aEdge
+					? Number(getNodeOutput(aEdge.source))
+					: Number(base.a ?? 0);
+				const b = bEdge
+					? Number(getNodeOutput(bEdge.source))
+					: Number(base.b ?? (type === 'multiply' ? 1 : 0));
+				if (Number.isNaN(a) || Number.isNaN(b)) return undefined;
+				return (type === 'add' ? a + b : a * b) as GraphParameterValue;
+			}
+			return undefined;
 		};
-		const params = (hasBox.data.params ?? {}) as Partial<BoxParams>;
-		return {
-			box: {
-				width: Number(params.width ?? 1),
-				height: Number(params.height ?? 1),
-				depth: Number(params.depth ?? 1),
-				color: String(params.color ?? '#4f46e5'),
+
+		for (const e of edges) {
+			if (!e.targetHandle) continue;
+			const targetParams = effectiveParamsByNode.get(e.target);
+			const source = nodeMap.get(e.source);
+			const target = nodeMap.get(e.target);
+			if (!targetParams || !source || !target) continue;
+
+			// Extract value from known constant nodes
+			let value: GraphParameterValue | undefined;
+			const sourceType = String(source.data.typeKey);
+			if (
+				sourceType === 'numberConst' ||
+				sourceType === 'colorConst' ||
+				sourceType === 'booleanConst' ||
+				sourceType === 'stringConst'
+			) {
+				value =
+					(
+						source.data.params as
+							| Record<string, GraphParameterValue>
+							| undefined
+					)?.value ?? null;
+			}
+
+			if (value !== undefined) {
+				targetParams[e.targetHandle] = value;
+			}
+		}
+		// Create IR module from current nodes and edges
+		const irNodes = nodes.map((n) => ({
+			id: n.id,
+			typeKey: String(n.data.typeKey),
+			label: String(n.data.label || ''),
+			params: (effectiveParamsByNode.get(n.id) ||
+				((n.data.params || {}) as Record<
+					string,
+					GraphParameterValue
+				>)) as Record<string, GraphParameterValue>,
+		}));
+
+		const irEdges = edges.map((e) => ({
+			id: e.id,
+			source: e.source,
+			target: e.target,
+			targetHandle: e.targetHandle || undefined,
+		}));
+
+		const irModule = {
+			meta: {
+				schemaVersion: '1.0.0',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+			tree: {
+				moduleName: 'LivePreview',
+				rootType: 'r3f' as const,
+			},
+			graph: {
+				nodes: irNodes,
+				edges: irEdges,
 			},
 		};
+
+		return {irModule};
 	})();
 
 	const adapterCommands = curatedAdapterList.map((d) => ({
@@ -257,6 +590,8 @@ function NodeGraphEditor() {
 
 	const paletteCommands = [
 		{id: 'new-box', label: 'Insert Box', action: addBoxNode},
+		{id: 'new-render', label: 'Insert Render', action: addRenderNode},
+		{id: 'new-camera', label: 'Insert Camera', action: addCameraNode},
 		...adapterCommands,
 		{
 			id: 'export-code',
@@ -309,6 +644,10 @@ function NodeGraphEditor() {
 										onNodesChange={onNodesChange}
 										onEdgesChange={onEdgesChange}
 										onConnect={onConnect}
+										onConnectStart={onConnectionStart}
+										onConnectEnd={onConnectionEnd}
+										onNodeMouseEnter={onNodeMouseEnter}
+										onNodeMouseLeave={onNodeMouseLeave}
 										fitView
 										className='bg-background text-foreground'
 										style={{width: '100%', height: '100%'}}
@@ -319,6 +658,28 @@ function NodeGraphEditor() {
 									>
 										<DraggableMinimap />
 									</ReactFlow>
+
+									{/* Parameter connection overlay */}
+									{connectionMode?.targetNodeId &&
+										connectionMode.targetPosition && (
+											<ParameterConnectionOverlay
+												nodeData={
+													nodes.find(
+														(n) => n.id === connectionMode.targetNodeId
+													)?.data || {typeKey: 'unknown'}
+												}
+												nodePosition={connectionMode.targetPosition}
+												connectedParameters={edges
+													.filter(
+														(e) =>
+															e.target === connectionMode.targetNodeId &&
+															e.targetHandle
+													)
+													.map((e) => e.targetHandle!)}
+												onParameterSelect={onParameterSelect}
+												onCancel={onCancelConnection}
+											/>
+										)}
 								</DndContext>
 							</div>
 						</ResizablePanel>
@@ -344,6 +705,9 @@ function NodeGraphEditor() {
 						node={selectedNode}
 						onParamChange={handleParamChange}
 						onLabelChange={handleLabelChange}
+						validationErrors={validationErrors.filter(
+							(e) => e.nodeId === selectedNodeId
+						)}
 					/>
 				</ResizablePanel>
 			</ResizablePanelGroup>

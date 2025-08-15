@@ -16,6 +16,23 @@ A lightweight structure to drive incremental, measurable progress without heavy 
 - Increments: `pi-1`, `pi-2`, ...
 - Files: `docs/increments/pi-1/charter.md`, `docs/increments/pi-1/log.md`
 
+## Current Increment Identification
+
+**For Humans and LLMs:** The current active increment is the earliest increment that is **not marked as Done**.
+
+- **Completed increments** are marked with ✅ Done status in their charter
+- **Current increment** is the first one without Done status
+- **Future increments** may exist in draft form but are not active
+
+Example progression:
+
+- PI-1: ✅ Done (completed)
+- PI-2: ✅ Done (completed)
+- PI-3: 🔄 In progress (current - work here)
+- PI-4: 📋 Draft (future - don't start yet)
+
+Always check increment status before assuming which is current!
+
 ## Increment Charter (IC)
 
 Contains:
@@ -45,6 +62,17 @@ Contains:
 
 - IC holds the current “context capsule” – copy forward and prune each increment
 - IL references decisions; only key decisions graduate into ADRs (optional)
+
+## Feedback Assessment Process
+
+Use `/p -f <feedback>` to submit concerns, feature requests, or ideas for contextual evaluation:
+
+- **Context Analysis**: Feedback assessed against completed work, current increment, PRD goals, and roadmap
+- **Categorization**: Already Planned, Enhancement, New Feature, Concern/Risk, or Process Improvement
+- **Priority Assessment**: Immediate (current increment), Next Increment, Backlog, or PRD Update
+- **Integration Strategy**: Recommendations that preserve current momentum while capturing value
+
+This ensures good ideas aren't lost while maintaining focus on current priorities.
 
 ## Templates
 

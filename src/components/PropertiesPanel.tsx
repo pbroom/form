@@ -7,10 +7,13 @@ import {
 import type {NodeData} from './Node';
 import DraggableNumberInput from '@/components/ui/draggable-number-input';
 
+import type {ValidationError} from '@/lib/node-registry';
+
 type PropertiesPanelProps = {
 	node: Node<NodeData> | null;
 	onParamChange: (nodeId: string, key: string, value: unknown) => void;
 	onLabelChange: (nodeId: string, label: string) => void;
+	validationErrors?: ValidationError[];
 };
 
 function ParameterControl({
@@ -21,6 +24,7 @@ function ParameterControl({
 	def: NodeParameterDefinition;
 	value: unknown;
 	onChange: (v: unknown) => void;
+	validationError?: ValidationError;
 }) {
 	if (def.type === 'number') {
 		return (
@@ -79,6 +83,7 @@ export default function PropertiesPanel({
 	node,
 	onParamChange,
 	onLabelChange,
+	validationErrors = [],
 }: PropertiesPanelProps) {
 	if (!node) {
 		return (
@@ -120,14 +125,26 @@ export default function PropertiesPanel({
 						Parameters
 					</div>
 					<div className='gap-x-4'>
-						{def.parameters.map((p) => (
-							<ParameterControl
-								key={p.key}
-								def={p}
-								value={node.data?.params?.[p.key]}
-								onChange={(v) => onParamChange(node.id, p.key, v)}
-							/>
-						))}
+						{def.parameters.map((p) => {
+							const paramError = validationErrors.find(
+								(e) => e.parameterKey === p.key
+							);
+							return (
+								<div key={p.key}>
+									<ParameterControl
+										def={p}
+										value={node.data?.params?.[p.key]}
+										onChange={(v) => onParamChange(node.id, p.key, v)}
+										validationError={paramError}
+									/>
+									{paramError && (
+										<div className='text-[10px] text-red-500 mt-0.5 px-1'>
+											{paramError.message}
+										</div>
+									)}
+								</div>
+							);
+						})}
 					</div>
 				</div>
 			) : null}

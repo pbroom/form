@@ -27,3 +27,4 @@ A human-readable, increment-level project log. Updated at the close of each incr
 - Risks/Next:
   - Expand codegen to walk TreeLayer and emit parameterized scene
   - Automate adapter generation pipeline and broaden coverage
+- Predominent agent model used: gpt-5

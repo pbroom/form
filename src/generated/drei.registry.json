@@ -1,64 +1,452 @@
 {
-	"name": "drei-subset",
-	"version": "0.1.0",
-	"nodes": [
-		{
-			"key": "orbitControls",
-			"label": "OrbitControls",
-			"category": "utility",
-			"parameters": []
-		},
-		{
-			"key": "directionalLight",
-			"label": "DirectionalLight",
-			"category": "light",
-			"parameters": [
-				{
-					"key": "intensity",
-					"label": "Intensity",
-					"type": "number",
-					"defaultValue": 1
-				}
-			]
-		},
-		{
-			"key": "ambientLight",
-			"label": "AmbientLight",
-			"category": "light",
-			"parameters": [
-				{
-					"key": "intensity",
-					"label": "Intensity",
-					"type": "number",
-					"defaultValue": 0.7
-				}
-			]
-		},
-		{
-			"key": "mesh",
-			"label": "Mesh",
-			"category": "mesh",
-			"parameters": [
-				{
-					"key": "name",
-					"label": "Name",
-					"type": "string",
-					"defaultValue": "Mesh"
-				}
-			]
-		},
-		{
-			"key": "sphere",
-			"label": "Sphere",
-			"category": "geometry",
-			"parameters": [
-				{
-					"key": "radius",
-					"label": "Radius",
-					"type": "number",
-					"defaultValue": 1
-				}
-			]
-		}
-	]
+  "name": "drei-automated",
+  "version": "1.0.0",
+  "generated": "2025-08-15T18:43:49.165Z",
+  "description": "Automatically generated drei component registry",
+  "nodes": [
+    {
+      "key": "box",
+      "label": "Box",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        }
+      ]
+    },
+    {
+      "key": "sphere",
+      "label": "Sphere",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        }
+      ]
+    },
+    {
+      "key": "plane",
+      "label": "Plane",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        }
+      ]
+    },
+    {
+      "key": "cylinder",
+      "label": "Cylinder",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        }
+      ]
+    },
+    {
+      "key": "cone",
+      "label": "Cone",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        }
+      ]
+    },
+    {
+      "key": "torus",
+      "label": "Torus",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        }
+      ]
+    },
+    {
+      "key": "meshwobblematerial",
+      "label": "MeshWobbleMaterial",
+      "category": "material",
+      "parameters": [
+        {
+          "key": "factor",
+          "label": "Factor",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "speed",
+          "label": "Speed",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "color",
+          "label": "Color",
+          "type": "color",
+          "defaultValue": "#ffffff"
+        }
+      ]
+    },
+    {
+      "key": "meshdistortmaterial",
+      "label": "MeshDistortMaterial",
+      "category": "material",
+      "parameters": [
+        {
+          "key": "distort",
+          "label": "Distort",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "speed",
+          "label": "Speed",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "color",
+          "label": "Color",
+          "type": "color",
+          "defaultValue": "#ffffff"
+        }
+      ]
+    },
+    {
+      "key": "orbitcontrols",
+      "label": "OrbitControls",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "enableZoom",
+          "label": "EnableZoom",
+          "type": "boolean",
+          "defaultValue": true
+        },
+        {
+          "key": "enablePan",
+          "label": "EnablePan",
+          "type": "boolean",
+          "defaultValue": true
+        },
+        {
+          "key": "enableRotate",
+          "label": "EnableRotate",
+          "type": "boolean",
+          "defaultValue": true
+        }
+      ]
+    },
+    {
+      "key": "trackballcontrols",
+      "label": "TrackballControls",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "rotateSpeed",
+          "label": "RotateSpeed",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "zoomSpeed",
+          "label": "ZoomSpeed",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "panSpeed",
+          "label": "PanSpeed",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "key": "flycontrols",
+      "label": "FlyControls",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "movementSpeed",
+          "label": "MovementSpeed",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "rollSpeed",
+          "label": "RollSpeed",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "key": "grid",
+      "label": "Grid",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "args",
+          "label": "Arguments",
+          "type": "string",
+          "defaultValue": "[1, 1, 1]"
+        },
+        {
+          "key": "cellSize",
+          "label": "CellSize",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "cellThickness",
+          "label": "CellThickness",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "key": "gizmohelper",
+      "label": "GizmoHelper",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "alignment",
+          "label": "Alignment",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "margin",
+          "label": "Margin",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "key": "stats",
+      "label": "Stats",
+      "category": "utility",
+      "parameters": []
+    },
+    {
+      "key": "environment",
+      "label": "Environment",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "preset",
+          "label": "Preset",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "background",
+          "label": "Background",
+          "type": "boolean",
+          "defaultValue": true
+        }
+      ]
+    },
+    {
+      "key": "sky",
+      "label": "Sky",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "distance",
+          "label": "Distance",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "turbidity",
+          "label": "Turbidity",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "rayleigh",
+          "label": "Rayleigh",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "key": "stars",
+      "label": "Stars",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "radius",
+          "label": "Radius",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "depth",
+          "label": "Depth",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "count",
+          "label": "Count",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "factor",
+          "label": "Factor",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "saturation",
+          "label": "Saturation",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "fade",
+          "label": "Fade",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "key": "sparkles",
+      "label": "Sparkles",
+      "category": "utility",
+      "parameters": [
+        {
+          "key": "count",
+          "label": "Count",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "speed",
+          "label": "Speed",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "opacity",
+          "label": "Opacity",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 1,
+          "step": 0.1
+        },
+        {
+          "key": "color",
+          "label": "Color",
+          "type": "color",
+          "defaultValue": "#ffffff"
+        },
+        {
+          "key": "size",
+          "label": "Size",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        }
+      ]
+    },
+    {
+      "key": "cloud",
+      "label": "Cloud",
+      "category": "geometry",
+      "parameters": [
+        {
+          "key": "opacity",
+          "label": "Opacity",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 1,
+          "step": 0.1
+        },
+        {
+          "key": "speed",
+          "label": "Speed",
+          "type": "number",
+          "defaultValue": 1,
+          "min": 0,
+          "max": 10,
+          "step": 0.1
+        },
+        {
+          "key": "width",
+          "label": "Width",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "depth",
+          "label": "Depth",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "key": "segments",
+          "label": "Segments",
+          "type": "string",
+          "defaultValue": ""
+        }
+      ]
+    }
+  ]
 }

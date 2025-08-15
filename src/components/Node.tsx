@@ -56,16 +56,20 @@ function CustomNode({id, data, selected}: NodeProps) {
 									position={Position.Left}
 									id={p.key}
 									data-testid={`handle-target-param-${p.key}`}
-									className='-left-3'
+									className='absolute -left-3!'
 								/>
-								<div className='text-[11px] text-muted-foreground'>
+								<div className='text-[11px] text-muted-foreground ml-2'>
 									{p.label}
 								</div>
 							</div>
 						))}
 
-					{/* Generic add handle, optionally enabled for node types that support it */}
-					{def.parameters.some((p) => !connectedParamKeys.includes(p.key)) ? (
+					{/* Generic add handle, only if there are connectable, unconnected params */}
+					{def.parameters.some(
+						(p) =>
+							p.acceptsConnections !== false &&
+							!connectedParamKeys.includes(p.key)
+					) ? (
 						<div className='relative flex items-center gap-2'>
 							<CustomHandle
 								type='target'
@@ -73,9 +77,11 @@ function CustomNode({id, data, selected}: NodeProps) {
 								id='__new__'
 								variant='generic'
 								data-testid='handle-target-generic'
-								className='-left-3!'
+								className='absolute -left-3!'
 							/>
-							<div className='text-[10px] text-muted-foreground'>Input</div>
+							<div className='text-[10px] text-muted-foreground ml-2'>
+								Input
+							</div>
 						</div>
 					) : null}
 				</div>

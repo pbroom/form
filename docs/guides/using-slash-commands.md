@@ -7,6 +7,19 @@ This guide shows how to use the custom slash commands defined in `.cursor/rules/
 - Using Cursor editor with the workspace open
 - File present: `.cursor/rules/increments.mdc`
 
+## Current Increment Identification
+
+**Important:** Always check which increment is current before using commands!
+
+- **Current increment** = earliest increment **not marked as Done** in its charter
+- Commands like `/il log` and `/effort status` operate on the current increment
+- Check `docs/increments/pi-X/charter.md` files for status indicators:
+  - ✅ Done = completed increment
+  - 🔄 In progress = current increment
+  - 📋 Draft = future increment
+
+Example: If PI-1 and PI-2 are ✅ Done, then PI-3 is current (even if it shows "Not started")
+
 ## Core commands
 
 - `/pi <id> init <focus>`
@@ -59,7 +72,20 @@ This guide shows how to use the custom slash commands defined in `.cursor/rules/
   - Proposes and runs core build/test commands non-interactively (`npm run -s build`, optionally `npm test`)
 
 - `/emit react <module>`
+
   - Emits React/R3F TSX for an IR module to `generated/<module>.tsx`, fences regions, runs typecheck
+
+- `/p -f <feedback>`
+
+  - Submit feedback, concerns, or feature requests for contextual assessment
+  - Does not immediately act on feedback; instead evaluates it against current project state
+  - Provides integration recommendations while preserving current increment focus
+  - Example: `/p -f I think we need better error handling in the viewport when nodes fail to render`
+
+- `/pi <id> complete`
+  - Marks the specified increment as ✅ Done in its charter
+  - Updates project log with increment summary
+  - Example: `/pi pi-2 complete`
 
 ## Tips
 

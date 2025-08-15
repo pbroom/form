@@ -1,87 +1,150 @@
+---
+alwaysApply: true
+---
+
+# Increment Method (Lean TDD for Humans + LLMs)
+
+A lightweight structure to drive incremental, measurable progress without heavy process. Two artifacts per increment:
+
+- Increment Charter (IC): source-of-truth plan for the increment
+- Increment Log (IL): short running log after each meaningful change (commit/PR/LLM update)
+
+## Goals
+
+- Preserve necessary context for deep-dives while trimming irrelevant detail
+- Make progress measurable with test-first (TDD) ACs
+- Enable any human/agent to resume quickly
+
+## Naming
+
+- Increments: `pi-1`, `pi-2`, ...
+- Files: `docs/increments/pi-1/charter.md`, `docs/increments/pi-1/log.md`
+
+## Current Increment Identification
+
+**For Humans and LLMs:** The current active increment is the earliest increment that is **not marked as Done**.
+
+- **Completed increments** are marked with ✅ Done status in their charter
+- **Current increment** is the first one without Done status
+- **Future increments** may exist in draft form but are not active
+
+Example progression:
+
+- PI-1: ✅ Done (completed)
+- PI-2: ✅ Done (completed)
+- PI-3: 🔄 In progress (current - work here)
+- PI-4: 📋 Draft (future - don't start yet)
+
+Always check increment status before assuming which is current!
+
+## Increment Charter (IC)
+
+Contains:
+
+- Context Capsule: high-level aim + constraints to keep efforts aligned
+- Focus: 1–2 sentences describing the slice we’re shipping
+- Prioritized ACs: cornerstone acceptance criteria for the slice
+- Efforts: list of efforts; for each: tasks, ACs, tests (TDD), steps, estimate (S/M/L), status checklist
+- Scope Fence: what is intentionally out-of-scope for this increment
+- Exit Criteria: what makes the increment done (all tests pass; demoable)
+
+## Increment Log (IL)
+
+- Each entry starts with a 1–2 sentence Summary in plain, concise English
+- Short bullets: action, files touched, decisions, issues, learnings, tests/artifacts
+- Keep it terse; 3–6 bullets per entry
+
+## TDD Loop (for each task)
+
+1. Define/confirm ACs and tests
+2. Write tests/fixtures (fail)
+3. Implement minimal code
+4. Make tests pass; refactor
+5. Update IC status; add IL entry (include links/screens)
+
+## Context Management
+
+- IC holds the current “context capsule” – copy forward and prune each increment
+- IL references decisions; only key decisions graduate into ADRs (optional)
+
+## Feedback Assessment Process
+
+Use `/p -f <feedback>` to submit concerns, feature requests, or ideas for contextual evaluation:
+
+- **Context Analysis**: Feedback assessed against completed work, current increment, PRD goals, and roadmap
+- **Categorization**: Already Planned, Enhancement, New Feature, Concern/Risk, or Process Improvement
+- **Priority Assessment**: Immediate (current increment), Next Increment, Backlog, or PRD Update
+- **Integration Strategy**: Recommendations that preserve current momentum while capturing value
+
+This ensures good ideas aren't lost while maintaining focus on current priorities.
+
+## Templates
+
+See `docs/increments/_templates/charter.template.md` and `docs/increments/_templates/log.template.md`.
+
+## Project Log
+
+- At the end of each increment, update `docs/project-log.md` with a concise, human-readable summary (outcomes, artifacts, decisions, learnings)
+- Keep increment-level details in `docs/increments/<id>/log.md`; the project log is a top-level, per-increment changelog
+
 ## Slash Commands – Increment Workflow
 
-# Use these in Cursor chat to automate common actions. They are instructions for the agent to execute edits/tests.
+### Use these in Cursor chat to automate common actions. They are instructions for the agent to execute edits/tests
 
-/pi <id> init <focus>
-
-- Create `docs/increments/<id>/charter.md` and `docs/increments/<id>/log.md` from templates.
-- Set Focus in charter to <focus> and copy the latest Context Capsule from the previous increment if present.
-- Update `docs/.vitepress/config.ts` Process section to link new charter/log.
-- Output a short plan of actions and then perform them.
-
-/pi <id> set-goal <aim>
-
-- Update the Increment Charter’s Context Capsule Aim to <aim>.
-- Preserve other content.
-
-/effort add <title>
-
-- Append an Effort block to the current increment charter with title <title>.
-- Include empty Tasks, ACs, Tests, Steps, Estimate=S, Status=Not started.
-
-/effort task add <effort-title> <task-text>
-
-- Add a checkbox task under the Effort titled <effort-title>: <task-text>.
-
-/effort status <effort-title> <status>
-
-- Set the Status field of the Effort titled <effort-title> to one of: Not started | In progress | Blocked | Done.
-
-/il log <summary>
+/il log `<summary>`
 
 - Append a new entry to the current increment log with:
   - Summary: one to two sentences in plain, concise English that summarize the entry
-  - Action: <summary>
+  - Action: `<summary>`
   - Files/Areas: infer from recent edits; if unknown, leave placeholder
   - Decisions: infer from context; else placeholder
   - Issues/Risks: infer or placeholder
   - Learnings: infer or placeholder
   - Tests/Artifacts: link to any new tests or snapshots if available
 
-/ac list cornerstone
-
-- Summarize the cornerstone ACs from `docs/architecture/acceptance-criteria.md` most relevant to the current increment Focus.
-- Return links to the sections.
-
-/tdd plan <effort-title>
+/tdd plan `<effort-title>`
 
 - For the given Effort, generate a minimal TDD plan: tests to write first (fail), fixtures/snapshots needed, and run commands.
 - Insert under the Effort’s Tests and Steps sections in the charter.
 
-/test gen playwright <name>
+/test gen playwright `<name>`
 
 - Create a Playwright test skeleton `tests/e2e/<name>.spec.ts` matching the ACs in the current Effort.
 - Include `data-testid` selectors and TODOs for assertions.
 
-/run core
-
-- Propose the following commands to run non-interactively and then run them: `npm run -s build` (and `npm test` if present).
-- Report status and surface errors.
-
-/emit react <module>
-
-- Generate React/R3F TSX for the IR module named <module> using the emitter.
-- Save under `generated/<module>.tsx`, add fenced regions, and run `tsc --noEmit`.
-- Post a snippet and any type errors.
-
-/p <prompt>
+/p `<prompt>`
 
 - Treat this as operating under the Increment Method guidelines.
 - Assume the current increment is the latest under `docs/increments/` (max `pi-*`).
 - Steps:
   1. Identify current increment (e.g., `pi-3`), link its `charter.md` and `log.md`.
-  2. Summarize the user’s intent (<prompt>) into a one-paragraph plan tied to the increment Focus.
+  2. Summarize the user's intent (`<prompt>`) into a one-paragraph plan tied to the increment Focus.
   3. If needed, update the Charter: add/modify Effort, Tasks, ACs, Tests, Steps, Status.
   4. Apply a lean TDD loop: propose tests first; then minimal implementation; then verification.
   5. Append an entry to the Increment Log capturing actions/decisions/changes.
   6. Keep responses concise; include code fences only for code or commands.
 - If ambiguity remains, ask one clarifying question but still propose the next concrete step.
 
-/pl log <summary>
+/p -f `<feedback>`
+
+- Process feedback/concerns/feature requests contextually without immediate action.
+- Assessment framework:
+  1. **Context Analysis**: Evaluate against completed work, current increment progress, PRD goals, and project roadmap.
+  2. **Categorization**: Identify as Already Planned, Enhancement, New Feature, Concern/Risk, or Process Improvement.
+  3. **Priority Assessment**: Determine if feedback should be: Immediate (enhances current increment), Next Increment, Backlog, or PRD Update.
+  4. **Integration Strategy**: Propose how to incorporate without disrupting current priorities.
+- Response format:
+  - Brief assessment summary explaining the reasoning
+  - Integration recommendation with timing
+  - Any updates to increment charter, PRD, or backlog as appropriate
+  - Highlight if feedback is already addressed in existing plans
+- Goal: Capture value while maintaining current momentum and focus.
+
+/pl log `<summary>`
 
 - Append a new entry to the project-level log at `docs/project-log.md` with:
   - Entry header: latest increment id (e.g., PI-1) + date
-  - Summary: <summary>
+  - Summary: `<summary>`
   - Artifacts: link to increment charter/log and any demo assets
   - Major efforts and status: pulled from the charter
   - Tests at close: unit and e2e counts
