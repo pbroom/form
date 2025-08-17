@@ -513,7 +513,7 @@ function NodeGraphEditor() {
 			const target = nodeMap.get(e.target);
 			if (!targetParams || !source || !target) continue;
 
-			// Extract value from known constant nodes
+			// Extract value from known constant nodes and math nodes
 			let value: GraphParameterValue | undefined;
 			const sourceType = String(source.data.typeKey);
 			if (
@@ -528,6 +528,9 @@ function NodeGraphEditor() {
 							| Record<string, GraphParameterValue>
 							| undefined
 					)?.value ?? null;
+			} else if (sourceType === 'add' || sourceType === 'multiply') {
+				// Use the recursive getNodeOutput function for math nodes
+				value = getNodeOutput(source.id);
 			}
 
 			if (value !== undefined) {

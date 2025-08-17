@@ -91,6 +91,19 @@ See `docs/increments/_templates/charter.template.md` and `docs/increments/_templ
 
 ### Use these in Cursor chat to automate common actions. They are instructions for the agent to execute edits/tests
 
+### Execution Contract (applies to every command below)
+
+- Always follow the Increment Method end-to-end.
+- Identify the current increment by reading `docs/increments/**/charter.md` in ascending order and selecting the first charter that is not marked as Done. Use its paired `log.md`.
+- Any code or docs edits must be reflected in the increment artifacts before ending the turn:
+  - Update the relevant Effort Tasks/ACs/Status in `docs/increments/<id>/charter.md`.
+  - Append a concise entry to `docs/increments/<id>/log.md` summarizing Action, Files/Areas, Decisions, Issues/Risks, Learnings, Tests/Artifacts.
+- After substantive code edits, run tests non-interactively and ensure they are green.
+  - Default: `npm test -- tests/unit/`
+  - If failures are obviously fixable, fix and re-run once; otherwise, note the failures in the IL and stop.
+- Keep responses concise; include fenced code/commands only when necessary. Ask one clarifying question only if absolutely required; otherwise proceed with the next concrete step.
+- Never mark an increment Done unless all ACs of the increment are met and exit criteria satisfied (tests green; demoable).
+
 /il log `<summary>`
 
 - Append a new entry to the current increment log with:
@@ -125,6 +138,13 @@ See `docs/increments/_templates/charter.template.md` and `docs/increments/_templ
   6. Keep responses concise; include code fences only for code or commands.
 - If ambiguity remains, ask one clarifying question but still propose the next concrete step.
 
+Automation details (must do):
+
+- Detect current increment per Execution Contract.
+- Summarize the intent as a one-paragraph plan tied to the increment Focus.
+- If work changes scope/status, reflect it in the charter Effort sections.
+- Run tests after edits and capture results in the IL entry.
+
 /p -f `<feedback>`
 
 - Process feedback/concerns/feature requests contextually without immediate action.
@@ -149,3 +169,9 @@ See `docs/increments/_templates/charter.template.md` and `docs/increments/_templ
   - Major efforts and status: pulled from the charter
   - Tests at close: unit and e2e counts
   - Decisions/Learnings/Risks: summarize from increment log
+
+### Guardrails
+
+- Placeholders in this file must be wrapped in backticks (e.g., `<summary>`) to avoid MD033.
+- Always prefer absolute workspace paths when running commands.
+- Use non-interactive flags and avoid pagers in commands.

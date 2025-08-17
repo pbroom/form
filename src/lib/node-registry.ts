@@ -4,7 +4,7 @@ import {mapAdapterToNodeDefinitions} from '@/lib/adapters/mapper';
 export type NodeParameterDefinition = {
 	key: string;
 	label: string;
-	type: 'number' | 'color' | 'string' | 'boolean';
+	type: 'number' | 'color' | 'string' | 'boolean' | 'any';
 	defaultValue: unknown;
 	min?: number;
 	max?: number;
@@ -53,7 +53,7 @@ const BASE_NODE_DEFINITIONS: Record<string, NodeTypeDefinition> = {
 			{
 				key: 'input',
 				label: 'Input',
-				type: 'string',
+				type: 'any',
 				defaultValue: '',
 				acceptsConnections: true,
 			},
@@ -86,11 +86,13 @@ const BASE_NODE_DEFINITIONS: Record<string, NodeTypeDefinition> = {
 			{
 				key: 'input',
 				label: 'Input',
-				type: 'string',
+				type: 'any',
 				defaultValue: '',
+				acceptsConnections: true,
 			},
 		],
 		appearanceHint: 'structure',
+		outputType: 'scene',
 	},
 	box: {
 		key: 'box',
@@ -232,74 +234,7 @@ const BASE_NODE_DEFINITIONS: Record<string, NodeTypeDefinition> = {
 			},
 		],
 	},
-	// Primitive constants
-	numberConst: {
-		key: 'numberConst',
-		label: 'Number',
-		category: 'utility',
-		appearanceHint: 'utility',
-		outputType: 'number',
-		parameters: [
-			{
-				key: 'value',
-				label: 'Value',
-				type: 'number',
-				defaultValue: 1,
-				min: -1000000,
-				max: 1000000,
-				step: 0.01,
-				acceptsConnections: false,
-			},
-		],
-	},
-	colorConst: {
-		key: 'colorConst',
-		label: 'Color',
-		category: 'utility',
-		appearanceHint: 'utility',
-		outputType: 'color',
-		parameters: [
-			{
-				key: 'value',
-				label: 'Value',
-				type: 'color',
-				defaultValue: '#4f46e5',
-				acceptsConnections: false,
-			},
-		],
-	},
-	booleanConst: {
-		key: 'booleanConst',
-		label: 'Boolean',
-		category: 'utility',
-		appearanceHint: 'utility',
-		outputType: 'boolean',
-		parameters: [
-			{
-				key: 'value',
-				label: 'Value',
-				type: 'boolean',
-				defaultValue: false,
-				acceptsConnections: false,
-			},
-		],
-	},
-	stringConst: {
-		key: 'stringConst',
-		label: 'String',
-		category: 'utility',
-		appearanceHint: 'utility',
-		outputType: 'string',
-		parameters: [
-			{
-				key: 'value',
-				label: 'Value',
-				type: 'string',
-				defaultValue: '',
-				acceptsConnections: false,
-			},
-		],
-	},
+
 	// Basic math transforms (number)
 	add: {
 		key: 'add',
@@ -357,7 +292,8 @@ let NODE_DEFINITIONS: Record<string, NodeTypeDefinition> =
 	BASE_NODE_DEFINITIONS;
 if (parsed.success) {
 	const mapped = mapAdapterToNodeDefinitions(parsed.data);
-	NODE_DEFINITIONS = {...BASE_NODE_DEFINITIONS, ...mapped};
+	// Prioritize our base definitions over adapter ones for custom nodes
+	NODE_DEFINITIONS = {...mapped, ...BASE_NODE_DEFINITIONS};
 }
 
 export type NodeParameterValues = Record<string, unknown>;

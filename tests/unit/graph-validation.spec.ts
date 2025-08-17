@@ -169,7 +169,7 @@ describe('Graph Validation', () => {
 					data: {
 						typeKey: 'box',
 						params: {
-							args: 123, // Invalid: number instead of string
+							width: 123, // Invalid: out of range (max is 10)
 						},
 					},
 				},
@@ -192,10 +192,10 @@ describe('Graph Validation', () => {
 
 			const errors = validateGraph(nodes, edges);
 
-			// Should find parameter validation errors (for the args parameter with wrong type)
+			// Should find parameter validation errors (for the width parameter out of range)
 			expect(
 				errors.some(
-					(e) => e.type === 'type-mismatch' && e.parameterKey === 'args'
+					(e) => e.type === 'out-of-range' && e.parameterKey === 'width'
 				)
 			).toBe(true);
 		});
@@ -209,7 +209,10 @@ describe('Graph Validation', () => {
 					data: {
 						typeKey: 'box',
 						params: {
-							args: '[2, 1.5, 1]', // Valid drei box args
+							width: 2,
+							height: 1.5,
+							depth: 1,
+							color: '#4f46e5',
 						},
 					},
 				},

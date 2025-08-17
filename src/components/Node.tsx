@@ -16,9 +16,9 @@ function CustomNode({id, data, selected}: NodeProps) {
 	const appearance = def?.appearanceHint ?? 'structure';
 	const bgByAppearance: Record<string, string> = {
 		structure: 'bg-card',
-		material: 'bg-[#1b1b24]',
-		light: 'bg-[#222417]',
-		utility: 'bg-[#1b1f23]',
+		material: 'bg-slate-50 dark:bg-slate-900',
+		light: 'bg-stone-50 dark:bg-stone-900',
+		utility: 'bg-zinc-50 dark:bg-zinc-900',
 	};
 
 	// Determine which parameter handles are currently connected to this node
@@ -56,9 +56,9 @@ function CustomNode({id, data, selected}: NodeProps) {
 									position={Position.Left}
 									id={p.key}
 									data-testid={`handle-target-param-${p.key}`}
-									className='absolute -left-3!'
+									className='absolute -left-5.5!'
 								/>
-								<div className='text-[11px] text-muted-foreground ml-2'>
+								<div className='text-[11px] text-muted-foreground'>
 									{p.label}
 								</div>
 							</div>
@@ -77,11 +77,9 @@ function CustomNode({id, data, selected}: NodeProps) {
 								id='__new__'
 								variant='generic'
 								data-testid='handle-target-generic'
-								className='absolute -left-3!'
+								className='absolute -left-5.5!'
 							/>
-							<div className='text-[10px] text-muted-foreground ml-2'>
-								Input
-							</div>
+							<div className='text-[11px] text-muted-foreground'>Input</div>
 						</div>
 					) : null}
 				</div>
@@ -91,6 +89,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 				type='source'
 				position={Position.Right}
 				data-testid='handle-source'
+				className='-right-2.5! top-4!'
 			/>
 		</div>
 	);

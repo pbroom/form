@@ -28,3 +28,32 @@ A human-readable, increment-level project log. Updated at the close of each incr
   - Expand codegen to walk TreeLayer and emit parameterized scene
   - Automate adapter generation pipeline and broaden coverage
 - Predominent agent model used: gpt-5
+
+## Entry: PI-2 (2025-08-16)
+
+- Summary: Expanded foundation to emit realistic, parameterized scenes with connection-driven rendering, automated adapter generation, and comprehensive parameter system. Bridged gap between basic box demo and genuine usable tool.
+- Artifacts:
+  - Increment Charter: `docs/increments/pi-2/charter.md`
+  - Increment Log: `docs/increments/pi-2/log.md`
+- Major efforts and status:
+  - TreeLayer Codegen Walker (CG3–CG6): dependency-ordered JSX generation with real props: done
+  - Connection-Driven Viewport Integration (VP1–VP5): scene graph hierarchy with Camera→Scene→Render flow: done
+  - Automated Adapter Generation (AD3–AD6): 19 drei components via package introspection: done
+  - Advanced Parameter & Connection System (AP1–AP5): smart connections, dynamic controls, parameter validation: done
+  - Parameter Value Flow & Primitive Nodes: constant nodes, math transforms with recursive evaluation: done
+  - Graph Validation & Type Safety (GV1–GV4): type-aware validation preventing invalid graph states: done
+- Tests (at close): 47 unit tests (6 new math node tests), comprehensive validation coverage
+- Decisions:
+  - Connection-driven semantics essential for node graph editors; zero tolerance for legacy fallbacks
+  - Automated generation more reliable than manual curation; parameter inference patterns work well
+  - Math node chaining requires careful recursive evaluation; value propagation at IR-construction time
+- Learnings:
+  - Strict connection-driven approach needs good defaults to prevent user friction
+  - Light detection requires full connectivity analysis; consistent semantics crucial for user experience
+  - Validation must align with actual runtime node definitions from adapter registry
+- Risks/Next:
+  - Scene templates and quickstart workflows (deferred to focus on core parameter system)
+  - Professional UX interactions and foundational node organization (planned for PI-3)
+- Predominant agent model used: gpt-5
+- Additional decisions at close:
+  - Adapter registry merge-order fix: ensure base/custom node definitions override generated drei entries to preserve granular parameters (e.g., box)

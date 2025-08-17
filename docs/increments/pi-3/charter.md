@@ -2,104 +2,147 @@
 
 ## Context Capsule
 
-- Aim: Elevate the node graph editor to professional application standards with intuitive navigation, organized command access, and foundational math/primitive nodes
-- Constraints/Guardrails: Maintain existing functionality and connection-driven semantics; follow established design patterns from tools like Figma; prioritize keyboard-first workflows
+- Aim: Ship a first-class "Code Node" that users can create, author in-editor, and wire into the graph with typed sockets and metadata-driven UI. This establishes the procedural bridge between authored code and nodes + properties panel.
+- Constraints/Guardrails: Deterministic emission and type safety; sandboxed execution with timeouts; no third-party imports or side effects; IR remains source of truth; follow existing adapter/schema patterns; use a lightweight embedded editor (CodeMirror) for syntax highlighting and QoL, defer Monaco-level advanced type tooling.
 
 ## Focus (What we ship)
 
-Professional UX interactions and foundational node organization that transforms the prototype into a tool with production-ready interaction patterns and essential mathematical primitives.
+- A minimal-but-complete Code Node that users can: create, define its underlying function, declare its type signature and metadata, auto-generate sockets, and edit parameters via the properties panel. It interoperates with existing nodes and participates in codegen and validation.
 
 ## Prioritized Acceptance Criteria (Cornerstones)
 
-- [ ] WASD navigation pans the node graph viewport smoothly and intuitively
-- [ ] Q key opens node palette (insertion-focused), Cmd+K/Cmd+/ opens command palette (all actions)
-- [ ] Node palette shows categorized/tagged nodes for efficient browsing and selection
-- [ ] Math primitive nodes (Add, Multiply, Vector3, Constants) available and functional
-- [ ] Figma-style application menu bar with proper File/Edit/View/Object structure
+- [ ] Create Code Node from palette; selecting it shows a dedicated Code tab in properties
+- [ ] In-editor code panel accepts a single exported function with typed inputs/outputs
+- [ ] Type extraction maps function signature to sockets (inputs → target params, output → source)
+- [ ] Metadata block configures label, appearance, parameter UI hints, defaults, and validation
+- [ ] Properties panel auto-renders controls from extracted types/metadata
+- [ ] Type-aware connections enforced (cannot connect incompatible sockets)
+- [ ] Safe runtime preview: executing function with current inputs yields output value without blocking UI
+- [ ] Codegen includes Code Node function and wires props deterministically; typechecks
+- [ ] Click → click connection UX: clicking a source handle, releasing, then clicking a target node's input handle opens a searchable chooser of compatible parameters; selecting one creates the connection without dragging
 
 ## Efforts
 
-- Effort: WASD Navigation System
+- Effort: Code Node Domain Model & Schema
 
   - Tasks:
-    - [ ] Implement WASD keydown handling for node graph editor focus
-    - [ ] Add smooth panning animation with configurable speed
-    - [ ] Handle focus management between graph and other UI elements
-    - [ ] Add visual feedback for active navigation mode
+    - [ ] Extend IR and node-registry to support `code` nodes with code string, version, and metadata
+    - [ ] Define Zod schema for Code Node (function source, signature, sockets, uiHints)
+    - [ ] Add mapper to transform Code Node into runtime/evaluation form
   - ACs:
-    - [ ] WASD keys pan the node graph when editor is focused
-    - [ ] Navigation respects boundaries and doesn't interfere with text inputs
-    - [ ] Smooth animation provides professional feel
-  - Tests: Unit tests for key handling; e2e tests for pan behavior
-  - Steps: Focus detection → Key handling → Pan integration → Animation polish
+    - [ ] IR validates Code Node instances and rejects invalid metadata/signatures
+    - [ ] Registry exposes Code Node definition with appearance and default template
+  - Tests (TDD): Schema pass/fail; IR ops invariants for add/update/remove; snapshot of serialized Code Node
+  - Steps: IR types → Zod schema → registry entry → mapper integration
   - Estimate: M
   - Status: Not started
 
-- Effort: Professional Command Access
+- Effort: Code View Panel (Standalone) & Properties Integration
 
   - Tasks:
-    - [ ] Separate node palette (Q) from command palette (Cmd+K/Cmd+/)
-    - [ ] Create categorized node organization system
-    - [ ] Implement hierarchical command structure
-    - [ ] Add search/filtering for large node sets
+    - [ ] Introduce a standalone `CodeViewPanel` component mounted to the right sidebar
+    - [ ] Place `CodeViewPanel` to the left of the properties panel in a full-height resizable layout
+    - [ ] Integrate CodeMirror with TypeScript/JavaScript syntax highlighting, line numbers, folding, bracket matching, search
+    - [ ] Provide template insertion for starter function + metadata; debounced onChange with validation feedback
+    - [ ] Keep properties panel focused on parameter UI; code view remains separate while developing
   - ACs:
-    - [ ] Q key shows node insertion palette with categories (Geometry, Math, etc.)
-    - [ ] Cmd+K shows full command palette (Export, Project, etc.)
-    - [ ] Node categories are browsable and searchable
-    - [ ] Commands follow standard application patterns
-  - Tests: Keyboard shortcut tests; palette filtering tests; command organization validation
-  - Steps: Palette separation → Node categorization → Command organization → Search implementation
+    - [ ] Code view is a full-height resizable panel positioned left of the properties panel
+    - [ ] Syntax highlighting and expected editor QoL (line numbers, folding, bracket matching, search) are available
+    - [ ] User can edit code and metadata with immediate validation signals in the code view
+    - [ ] Errors surface in the code view without breaking the graph
+  - Tests (TDD): UI render test for Code tab; debounced onChange unit; validation message rendering
+  - Steps: Properties panel tab → editor component → validation plumbing → UX polish
+  - Estimate: M
+  - Status: Not started
+
+- Effort: Type Extraction & Socket Generation
+
+  - Tasks:
+    - [ ] Use TypeScript compiler API (or lightweight parser) to extract function inputs/outputs
+    - [ ] Map extracted types to parameter definitions and socket directions
+    - [ ] Support primitives (number, string, boolean), arrays, tuples, and Vector-like structs
+    - [ ] Generate UI control hints from metadata (ranges, enums, color, step)
+  - ACs:
+    - [ ] Sockets appear/refresh after code changes; labels and types match signature
+    - [ ] Unsupported types produce actionable errors and block invalid sockets
+  - Tests (TDD): Parser unit tests across type matrix; socket generation snapshots; error cases
+  - Steps: Parse → normalize types → build param/socket model → integrate with properties
   - Estimate: L
   - Status: Not started
 
-- Effort: Math & Primitive Nodes
+- Effort: Safe Runtime Preview (Sandboxed Execution)
 
   - Tasks:
-    - [ ] Design math node system architecture
-    - [ ] Implement basic arithmetic nodes (Add, Subtract, Multiply, Divide)
-    - [ ] Add vector math nodes (Vector3, Dot, Cross, Normalize)
-    - [ ] Create constant nodes (Number, Boolean, String, Color)
-    - [ ] Integrate math nodes with existing parameter system
+    - [ ] Evaluate function in a sandbox with time budget and exception capture
+    - [ ] Compute output for current input values; expose as source socket value
+    - [ ] Provide clear error states and disable output when execution fails
   - ACs:
-    - [ ] Math nodes process numeric inputs and outputs correctly
-    - [ ] Vector operations work with 3D scene parameters
-    - [ ] Constants provide reusable values across the graph
-    - [ ] Math nodes integrate seamlessly with existing mesh/material parameters
-  - Tests: Math operation unit tests; integration tests with scene nodes; parameter flow validation
-  - Steps: Architecture design → Basic arithmetic → Vector math → Constants → Integration
-  - Estimate: L
+    - [ ] Infinite loops/timeouts do not freeze UI; errors are captured and shown
+    - [ ] Output updates deterministically on input change
+  - Tests (TDD): Timeout tests; error propagation unit; deterministic value update tests
+  - Steps: Sandbox wrapper → schedule/debounce → error UI → output propagation
+  - Estimate: M
   - Status: Not started
 
-- Effort: Figma-Style Menu Bar
+- Effort: Codegen Integration for Code Node
+
   - Tasks:
-    - [ ] Design application menu structure (File, Edit, View, Object, Window, Help)
-    - [ ] Implement menu bar component with keyboard shortcuts
-    - [ ] Organize existing commands into logical menu groups
-    - [ ] Add standard application actions (New, Open, Save, Export)
+    - [ ] Extend React emitter to include user function and wire outputs/props
+    - [ ] Generate imports/types only when referenced; fenced regions remain deterministic
+    - [ ] Typecheck emitted module including Code Node
   - ACs:
-    - [ ] Menu bar provides access to all application functions
-    - [ ] Keyboard shortcuts follow platform conventions
-    - [ ] Menu organization matches professional design tool patterns
-    - [ ] Hover states and interactions feel polished
-  - Tests: Menu navigation tests; keyboard shortcut validation; accessibility compliance
-  - Steps: Menu design → Component implementation → Command organization → Polish
+    - [ ] Emitted TSX compiles under `tsc --noEmit`
+    - [ ] Snapshot stable given identical Code Node source
+  - Tests (TDD): TSX snapshot tests; `tsc` typecheck step; integration scene containing Code Node
+  - Steps: Emitter extension → import management → typecheck integration → snapshots
+  - Estimate: M
+  - Status: Not started
+
+- Effort: Connection UX – Click→Click with Searchable Parameter Chooser
+
+  - Tasks:
+    - [ ] Support click-and-release on a source handle to set a pending connection
+    - [ ] Clicking a target node's input handle opens a Shadcn Command-based searchable list of compatible parameters
+    - [ ] Filter parameters by type compatibility; show labels, groups; keyboard navigation (search, arrows, enter)
+    - [ ] Selecting a parameter creates edge with `targetHandle` set; cancel clears pending state (Esc/click-outside)
+    - [ ] Preserve existing drag-to-connect behavior; generic target handle supported
+    - [ ] Add `data-testid` hooks for E2E
+  - ACs:
+    - [ ] No drag required: click source, release; click target → chooser appears and connects on selection
+    - [ ] Only compatible parameters are shown; search filters list; keyboard and mouse supported
+    - [ ] Edge is created deterministically with correct `targetHandle`; cancel restores neutral state
+  - Tests (TDD): Playwright flow tests for click→click connect; unit tests for type filter and pending-connection state machine
+  - Steps: Pending state → handle event wiring → Shadcn Command chooser → type filter → edge creation → UX polish
+  - Estimate: M
+  - Status: Not started
+
+- Effort: Interoperability & Validation
+
+  - Tasks:
+    - [ ] Enforce type-compatible connections with existing nodes
+    - [ ] Add graph-level validation messages for Code Node socket types
+  - ACs:
+    - [ ] Cannot connect incompatible types; helpful error shown
+  - Tests (TDD): Connection validation unit/e2e; properties panel control mapping tests
+  - Steps: Validation rules → connection guardrails → e2e wiring scenarios
   - Estimate: M
   - Status: Not started
 
 ## Scope Fence (Out of Scope)
 
-- Advanced math functions (trigonometry, calculus) - save for later increments
-- Custom keyboard shortcut configuration - use standard patterns for now
-- Multi-selection and bulk operations - focus on single-node workflows
-- Advanced animation or interpolation nodes - primitives only
-- Undo/redo system - defer to future increment
-- File format and project persistence - maintain current project state approach
+- Project persistence of Code Node and starter templates (deferred to next increment)
+- Multi-file modules, external package imports, async I/O, and side effects
+- Arbitrary global state mutation or DOM/Three access from user code
+- Advanced generics/conditional types; complex inference beyond primitives/tuples/simple structs
+- Full Monaco integration, code formatting, or lint rulesets (keep minimal editor for PI-3)
+- Node-to-code reverse import pipeline (future increment)
 
 ## Exit Criteria
 
-- All keyboard shortcuts work as expected (Q, WASD, Cmd+K)
-- Node palette shows organized categories with math primitives
-- Menu bar provides professional application chrome
-- WASD navigation feels smooth and intuitive
-- Math nodes can be used to create parameterized scenes
-- All existing PI-2 functionality preserved and enhanced
+- ✅ Create/edit/persist a Code Node with function + metadata; sockets auto-generated
+- ✅ Properties panel renders controls per metadata and stays in sync with code
+- ✅ Safe runtime preview updates deterministically and never freezes UI
+- ✅ Codegen outputs valid, typechecked TSX including Code Node
+- ✅ Type validation prevents incompatible connections
+- ✅ Interoperates with existing nodes in at least two scenes (number transform; vec3 mixer)
+- ✅ Click→click connection UX with searchable compatible parameter chooser is implemented and tested

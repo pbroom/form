@@ -98,3 +98,47 @@ Introduced primitive constant nodes and value-flow evaluation so connections can
 - Issues/Risks: Need focused unit tests for math chaining; ensure no cycles are evaluated (kept to acyclic usage)
 - Learnings: Value propagation at IR-construction time keeps viewport and codegen consistent
 - Tests/Artifacts: All unit tests remain green (41/41)
+
+## Entry 10
+
+Completed math transform nodes implementation with recursive evaluation and comprehensive testing.
+
+- Action: Fixed duplicate constant node definitions; implemented recursive value flow for add/multiply nodes; created comprehensive test suite for math node chaining
+- Files/Areas: `src/lib/node-registry.ts`, `src/components/NodeGraphEditor.tsx`, `tests/unit/math-nodes-value-flow.spec.ts`
+- Decisions: Use recursive getNodeOutput function for math nodes in edge processing; remove duplicate constant definitions to eliminate warnings
+- Issues/Risks: Duplicate node definitions caused build warnings; resolved by keeping only the enhanced versions with min/max/step
+- Learnings: Math node chaining requires careful recursive evaluation; value flow must handle both direct constants and computed outputs
+- Tests/Artifacts: 6 new math node tests passing; all 47 unit tests green; math nodes now properly chain and propagate values to target parameters
+
+## Entry 11
+
+PI-2 completed successfully with all efforts marked as Done and exit criteria satisfied.
+
+- Action: Marked PI-2 as complete; updated project log; verified all 47 unit tests passing including 6 new math node tests
+- Files/Areas: `docs/increments/pi-2/charter.md`, `docs/project-log.md`, test suite validation
+- Decisions: PI-2 meets exit criteria for shipped scope; scene templates deferred per scope fence; math node implementation completes parameter value flow system
+- Issues/Risks: None; all core functionality working as designed
+- Learnings: Increment Method provides clear structure for complex multi-system integration; connection-driven semantics essential for professional node graph editors
+- Tests/Artifacts: 47/47 unit tests passing; PI-2 charter updated with completion status; project log updated with comprehensive summary
+
+## Entry 12
+
+Identified and fixed critical issue: drei adapter registry was overriding custom box node definition.
+
+- Action: Fixed registry merge order to prioritize base definitions over adapter ones; updated scene/render node input types to 'any' for compatibility
+- Files/Areas: `src/lib/node-registry.ts`, type definitions for NodeParameterDefinition
+- Decisions: Changed merge from `{...BASE_NODE_DEFINITIONS, ...mapped}` to `{...mapped, ...BASE_NODE_DEFINITIONS}` to ensure custom nodes take precedence
+- Issues/Risks: Drei-generated box node with single 'args' parameter was replacing our granular parameter definition; resolved by fixing merge order
+- Learnings: Registry merging order is critical for maintaining custom node definitions; type compatibility between nodes must be carefully designed
+- Tests/Artifacts: All 47 unit tests passing; box node now properly shows granular parameters (width, height, depth, color, metalness, roughness, wireframe) instead of single 'args' parameter
+
+## Entry 13
+
+Consolidated PI-2 completion artifacts and stabilized adapter/validation alignment; updated project log entry with final date and decisions.
+
+- Action: Finalized PI-2 documentation (project log date and decisions); reaffirmed adapter registry merge order (custom/base definitions take precedence over generated); aligned structural node input types and validation with strict connection-driven semantics
+- Files/Areas: `docs/project-log.md`, `src/lib/node-registry.ts`, `src/generated/drei.registry.json`, `src/components/NodeGraphEditor.tsx`, `tests/unit/graph-validation.spec.ts`
+- Decisions: Keep custom nodes authoritative over generated adapters; enforce strict connection-driven rendering; maintain granular box parameters as the canonical definition
+- Issues/Risks: Future adapter updates could unintentionally override base definitions—guard with explicit merge-order tests
+- Learnings: Registry merge order is critical for preserving bespoke node behavior; validation must match runtime node definitions produced by the registry
+- Tests/Artifacts: 47/47 unit tests passing; PI-2 artifacts updated in project log
