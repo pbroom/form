@@ -1,177 +1,148 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 
-# Increment Method (Lean TDD for Humans + LLMs)
+# Increment Method (Lean TDD for Humans + LLMs) — Cursor Rule
 
-A lightweight structure to drive incremental, measurable progress without heavy process. Two artifacts per increment:
+**Purpose:** Guarantee that after _any_ meaningful change (code/docs/tests), the **Increment Charter (IC)** and **Increment Log (IL)** are updated _in the repo_, even if the agent loses conversation memory (new tab, model switch, cleared context). Also ensure the **Project Log (PL)** is updated at increment close to capture top-level outcomes.
 
-- Increment Charter (IC): source-of-truth plan for the increment
-- Increment Log (IL): short running log after each meaningful change (commit/PR/LLM update)
+## Canonical Paths & Templates
 
-## Goals
+- Increments live under `docs/increments/`.
+- Each increment has `charter.md` and `log.md`.
+- Templates:
+  - Charter: `docs/increments/_templates/charter.template.md`
+  - Log: `docs/increments/_templates/log.template.md`
+- Project log: `docs/project-log.md`
 
-- Preserve necessary context for deep-dives while trimming irrelevant detail
-- Make progress measurable with test-first (TDD) ACs
-- Enable any human/agent to resume quickly
+If an expected file is missing, create it from the template **immediately** and continue.
 
-## Naming
+## CURRENT Increment — Deterministic Selection
 
-- Increments: `pi-1`, `pi-2`, ...
-- Files: `docs/increments/pi-1/charter.md`, `docs/increments/pi-1/log.md`
+**Algorithm (always run at the start of a turn):**
 
-## Current Increment Identification
+1. List directories `docs/increments/pi-*` in ascending order by n.
+2. For each `pi-N`:
+   - Open `charter.md` and search for a line containing either:
+     - `✅ Done` **or**
+     - `Status: Done` (exact string anywhere in the document).
+   - The **current increment** is the _first_ `pi-N` whose charter does **not** indicate Done.
+3. If no increments exist:
 
-**For Humans and LLMs:** The current active increment is the earliest increment that is **not marked as Done**.
+   - Create `docs/increments/pi-1/charter.md` from the charter template,
+   - Create empty `docs/increments/pi-1/log.md` (header + section),
+   - Set `pi-1` as current.
 
-- **Completed increments** are marked with ✅ Done status in their charter
-- **Current increment** is the first one without Done status
-- **Future increments** may exist in draft form but are not active
+> Always re-run this selection after a model switch, new tab, or context clear.
 
-Example progression:
+## Turn Invariants (must be true before ending your turn)
 
-- PI-1: ✅ Done (completed)
-- PI-2: ✅ Done (completed)
-- PI-3: 🔄 In progress (current - work here)
-- PI-4: 📋 Draft (future - don't start yet)
+1. **IC/IL Sync:** If any code/docs/tests were created/edited:
 
-Always check increment status before assuming which is current!
+   - **Charter updated** (tasks/ACs/status/tests/steps reflect the change).
+   - **Log entry appended** (concise summary with bullets).
 
-## Increment Charter (IC)
+2. **Tests executed** after substantive edits:
 
-Contains:
+   - Default unit: `npm test -- tests/unit/`
+   - If failures look trivial, fix once and re-run. Otherwise, record failures verbatim in IL and stop.
 
-- Context Capsule: high-level aim + constraints to keep efforts aligned
-- Focus: 1–2 sentences describing the slice we’re shipping
-- Prioritized ACs: cornerstone acceptance criteria for the slice
-- Efforts: list of efforts; for each: tasks, ACs, tests (TDD), steps, estimate (S/M/L), status checklist
-- Scope Fence: what is intentionally out-of-scope for this increment
-- Exit Criteria: what makes the increment done (all tests pass; demoable)
+3. **No silent success:** If you could not locate/update IC/IL, create from template (see above) and record that in IL.
+4. **Idempotency:** All updates must be safe to apply twice without duplication:
 
-## Increment Log (IL)
+   - Use bullet insertion (append-only) for IL.
+   - Edit Charter by toggling task checkboxes and updating status lines rather than rewriting sections wholesale.
 
-- Each entry starts with a 1–2 sentence Summary in plain, concise English
-- Short bullets: action, files touched, decisions, issues, learnings, tests/artifacts
-- Keep it terse; 3–6 bullets per entry
+**If any invariant cannot be met, the turn must end with an IL entry describing why and what is needed.**
 
-## TDD Loop (for each task)
+## TDD Loop (per task)
 
-1. Define/confirm ACs and tests
-2. Write tests/fixtures (fail)
-3. Implement minimal code
-4. Make tests pass; refactor
-5. Update IC status; add IL entry (include links/screens)
+1. Confirm/define ACs + tests in the **Charter** (under the relevant Effort).
+2. Write tests/fixtures (failing first).
+3. Minimal implementation.
+4. Make tests pass; refactor.
+5. **Post-Action Sync (required):** Update Charter status and append IL entry (see format) _before responding_.
 
-## Context Management
+## Increment Log (IL) Entry Format (append-only)
 
-- IC holds the current “context capsule” – copy forward and prune each increment
-- IL references decisions; only key decisions graduate into ADRs (optional)
+Each entry:
 
-## Feedback Assessment Process
+- **Summary:** 1–2 plain sentences.
+- **Bullets (3–6):**
 
-Use `/p -f <feedback>` to submit concerns, feature requests, or ideas for contextual evaluation:
+  - **Action:** what changed
+  - **Files/Areas:** paths touched
+  - **Decisions:** key choices/rationale
+  - **Issues/Risks:** blockers, flakiness, unknowns
+  - **Learnings:** notable insights
+  - **Tests/Artifacts:** names/links; test result summary (e.g., “18 passed, 2 failed”)
 
-- **Context Analysis**: Feedback assessed against completed work, current increment, PRD goals, and roadmap
-- **Categorization**: Already Planned, Enhancement, New Feature, Concern/Risk, or Process Improvement
-- **Priority Assessment**: Immediate (current increment), Next Increment, Backlog, or PRD Update
-- **Integration Strategy**: Recommendations that preserve current momentum while capturing value
+If information is unknown, write a short placeholder and fill it on the next turn.
 
-This ensures good ideas aren't lost while maintaining focus on current priorities.
+## Project Log (PL)
 
-## Templates
+- At the close of each increment (when IC exit criteria are satisfied):
 
-See `docs/increments/_templates/charter.template.md` and `docs/increments/_templates/log.template.md`.
+  - Append an entry to `docs/project-log.md`.
+  - Entry should summarize increment outcomes, major efforts, key decisions, learnings, risks, and provide links to IC/IL.
 
-## Project Log
+- PL update is **mandatory at increment exit** but optional mid-increment unless major cross-cutting decisions occur.
 
-- At the end of each increment, update `docs/project-log.md` with a concise, human-readable summary (outcomes, artifacts, decisions, learnings)
-- Keep increment-level details in `docs/increments/<id>/log.md`; the project log is a top-level, per-increment changelog
+## Recovery on Context Loss (new tab/model/cleared chat)
 
-## Slash Commands – Increment Workflow
+When you detect a fresh context:
 
-### Use these in Cursor chat to automate common actions. They are instructions for the agent to execute edits/tests
+1. **Rebuild context from disk** (do not trust memory):
 
-### Execution Contract (applies to every command below)
+   - Run the CURRENT Increment selection algorithm.
+   - Read the current `charter.md` and `log.md` into working memory.
 
-- Always follow the Increment Method end-to-end.
-- Identify the current increment by reading `docs/increments/**/charter.md` in ascending order and selecting the first charter that is not marked as Done. Use its paired `log.md`.
-- Any code or docs edits must be reflected in the increment artifacts before ending the turn:
-  - Update the relevant Effort Tasks/ACs/Status in `docs/increments/<id>/charter.md`.
-  - Append a concise entry to `docs/increments/<id>/log.md` summarizing Action, Files/Areas, Decisions, Issues/Risks, Learnings, Tests/Artifacts.
-- After substantive code edits, run tests non-interactively and ensure they are green.
-  - Default: `npm test -- tests/unit/`
-  - If failures are obviously fixable, fix and re-run once; otherwise, note the failures in the IL and stop.
-- Keep responses concise; include fenced code/commands only when necessary. Ask one clarifying question only if absolutely required; otherwise proceed with the next concrete step.
-- Never mark an increment Done unless all ACs of the increment are met and exit criteria satisfied (tests green; demoable).
+2. **Self-check:**
 
-/il log `<summary>`
+   - If Charter/Log are missing, create from template; write an IL entry “Initialize artifacts after context loss.”
 
-- Append a new entry to the current increment log with:
-  - Summary: one to two sentences in plain, concise English that summarize the entry
-  - Action: `<summary>`
-  - Files/Areas: infer from recent edits; if unknown, leave placeholder
-  - Decisions: infer from context; else placeholder
-  - Issues/Risks: infer or placeholder
-  - Learnings: infer or placeholder
-  - Tests/Artifacts: link to any new tests or snapshots if available
+3. **Resume:** Proceed with the user’s request using the TDD Loop.
 
-/tdd plan `<effort-title>`
+## Execution Contract (applies to every slash command and freeform prompt)
 
-- For the given Effort, generate a minimal TDD plan: tests to write first (fail), fixtures/snapshots needed, and run commands.
-- Insert under the Effort’s Tests and Steps sections in the charter.
+- Always run **CURRENT Increment selection** first.
+- Keep responses concise; include code/commands only when necessary.
+- Clarifying questions are allowed as needed; when asked, they should not stall progress — continue proposing the next concrete step.
+- Never mark an increment Done unless **all increment ACs are met** and **exit criteria** satisfied (tests green; demoable).
 
-/test gen playwright `<name>`
+## Post-Action Sync Hook (non-negotiable)
 
-- Create a Playwright test skeleton `tests/e2e/<name>.spec.ts` matching the ACs in the current Effort.
-- Include `data-testid` selectors and TODOs for assertions.
+Before ending your turn after any change:
 
-/p `<prompt>`
+1. Edit `docs/increments/<current>/charter.md`:
 
-- Treat this as operating under the Increment Method guidelines.
-- Assume the current increment is the latest under `docs/increments/` (max `pi-*`).
-- Steps:
-  1. Identify current increment (e.g., `pi-3`), link its `charter.md` and `log.md`.
-  2. Summarize the user's intent (`<prompt>`) into a one-paragraph plan tied to the increment Focus.
-  3. If needed, update the Charter: add/modify Effort, Tasks, ACs, Tests, Steps, Status.
-  4. Apply a lean TDD loop: propose tests first; then minimal implementation; then verification.
-  5. Append an entry to the Increment Log capturing actions/decisions/changes.
-  6. Keep responses concise; include code fences only for code or commands.
-- If ambiguity remains, ask one clarifying question but still propose the next concrete step.
+   - Update related Effort’s Tasks (checkboxes), ACs status, **Tests** and **Steps** subsections if they changed.
+   - Update Effort **Status**.
 
-Automation details (must do):
+2. Append IL entry to `docs/increments/<current>/log.md` using the format above.
+3. Run tests and capture a one-line result in IL. If failures remain, include failing test names.
 
-- Detect current increment per Execution Contract.
-- Summarize the intent as a one-paragraph plan tied to the increment Focus.
-- If work changes scope/status, reflect it in the charter Effort sections.
-- Run tests after edits and capture results in the IL entry.
+If any of 1–3 fails, append an IL entry stating the failure and required follow-up, then stop.
 
-/p -f `<feedback>`
+## Slash Commands — Minimal, Deterministic Behavior
 
-- Process feedback/concerns/feature requests contextually without immediate action.
-- Assessment framework:
-  1. **Context Analysis**: Evaluate against completed work, current increment progress, PRD goals, and project roadmap.
-  2. **Categorization**: Identify as Already Planned, Enhancement, New Feature, Concern/Risk, or Process Improvement.
-  3. **Priority Assessment**: Determine if feedback should be: Immediate (enhances current increment), Next Increment, Backlog, or PRD Update.
-  4. **Integration Strategy**: Propose how to incorporate without disrupting current priorities.
-- Response format:
-  - Brief assessment summary explaining the reasoning
-  - Integration recommendation with timing
-  - Any updates to increment charter, PRD, or backlog as appropriate
-  - Highlight if feedback is already addressed in existing plans
-- Goal: Capture value while maintaining current momentum and focus.
+`/p <prompt>`
 
-/pl log `<summary>`
+1. Select CURRENT increment and link its `charter.md` + `log.md` (absolute paths).
+2. Summarize `<prompt>` into a one-paragraph plan aligned to the Charter **Focus**.
+3. If scope changes, update Charter (Effort/Tasks/ACs/Tests/Steps/Status).
+4. Run TDD Loop.
+5. **Post-Action Sync**.
 
-- Append a new entry to the project-level log at `docs/project-log.md` with:
-  - Entry header: latest increment id (e.g., PI-1) + date
-  - Summary: `<summary>`
-  - Artifacts: link to increment charter/log and any demo assets
-  - Major efforts and status: pulled from the charter
-  - Tests at close: unit and e2e counts
-  - Decisions/Learnings/Risks: summarize from increment log
+`/p -f <feedback>`
 
-### Guardrails
+- Process via Context Analysis → Categorization → Priority → Integration Strategy.
+- Update Charter/PRD/backlog if relevant.
+- Append IL entry noting assessment and any changes.
 
-- Placeholders in this file must be wrapped in backticks (e.g., `<summary>`) to avoid MD033.
-- Always prefer absolute workspace paths when running commands.
-- Use non-interactive flags and avoid pagers in commands.
+## Guardrails
+
+- Use absolute workspace paths when running commands.
+- Non-interactive flags only; avoid pagers.
+- Placeholders must be wrapped in backticks to avoid MD033.
+- If multiple increments appear active, pick the **lowest** `pi-N` not marked Done and write an IL note about the ambiguity.

@@ -7,6 +7,8 @@ import {
 	serializeGraph,
 	setParam,
 } from '@/lib/ir/ops';
+import {z} from 'zod';
+import {getNodeDefinition} from '@/lib/node-registry';
 
 describe('IR Schema and Ops', () => {
 	it('validates a minimal project', () => {
@@ -44,5 +46,30 @@ describe('IR Schema and Ops', () => {
 		const s1 = serializeGraph(g3);
 		const s2 = serializeGraph(g3);
 		expect(s1).toBe(s2);
+	});
+
+	it('Code Node requires code/codeMeta under new schema', () => {
+		const project = {
+			schemaVersion: '1',
+			modules: [
+				{
+					meta: {
+						schemaVersion: '1',
+						createdAt: '2024-01-01T00:00:00Z',
+						updatedAt: '2024-01-01T00:00:00Z',
+					},
+					graph: {nodes: [{id: 'code-1', typeKey: 'code'} as any], edges: []},
+					tree: {moduleName: 'MainScene', rootType: 'r3f'},
+				},
+			],
+		};
+		const parsed = ProjectSchema.safeParse(project);
+		expect(parsed.success).toBe(false);
+	});
+
+	it('Code Node minimal scaffold exists in registry', () => {
+		const def = getNodeDefinition('code');
+		expect(def).toBeDefined();
+		expect(def?.key).toBe('code');
 	});
 });

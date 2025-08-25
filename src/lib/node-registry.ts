@@ -45,6 +45,14 @@ export type NodeTypeDefinition = {
 };
 
 const BASE_NODE_DEFINITIONS: Record<string, NodeTypeDefinition> = {
+	code: {
+		key: 'code',
+		label: 'Code',
+		category: 'utility',
+		appearanceHint: 'utility',
+		outputType: 'any',
+		parameters: [],
+	},
 	render: {
 		key: 'render',
 		label: 'Render',

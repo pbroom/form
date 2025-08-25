@@ -2,13 +2,19 @@ import {Position, NodeProps, useStore} from '@xyflow/react';
 import {cn} from '@/lib/utils';
 import CustomHandle from './Handle';
 import {getNodeDefinition} from '@/lib/node-registry';
+import {motion} from 'motion/react';
 
 export type NodeData = {
 	typeKey: string;
 	label?: string;
 	params?: Record<string, unknown>;
 	onParamChange?: (nodeId: string, key: string, value: unknown) => void;
+	// For code nodes: dynamic parameter sockets derived from code
+	dynamicParams?: {key: string; label: string; type: string}[];
 };
+
+// should probably remove this motion component. It doesn't play nice with the handle component.
+const MotionHandle = motion.create(CustomHandle);
 
 function CustomNode({id, data, selected}: NodeProps) {
 	const d = data as NodeData;
@@ -28,9 +34,20 @@ function CustomNode({id, data, selected}: NodeProps) {
 			.map((e) => String(e.targetHandle))
 	);
 
+	// Effective parameter list: registry for normal nodes; dynamic for code nodes
+	const effectiveParams =
+		d.typeKey === 'code' && d.dynamicParams?.length
+			? d.dynamicParams.map((p) => ({
+					key: p.key,
+					label: p.label || p.key,
+					acceptsConnections: true as const,
+			  }))
+			: def?.parameters || [];
+
 	return (
 		<div
 			data-testid={`node-${String(d.typeKey)}-${String(id)}`}
+			data-node-id={String(id)}
 			data-selected={selected ? 'true' : 'false'}
 			className={cn(
 				'px-3 py-2 rounded-md outline outline-secondary text-left',
@@ -44,14 +61,14 @@ function CustomNode({id, data, selected}: NodeProps) {
 				{d.label ?? def?.label ?? 'Node'}
 			</div>
 
-			{def?.parameters?.length ? (
+			{effectiveParams.length ? (
 				<div className='space-y-1 pt-1'>
 					{/* Render handles only for parameters that already have inbound connections */}
-					{def.parameters
+					{effectiveParams
 						.filter((p) => connectedParamKeys.includes(p.key))
 						.map((p) => (
 							<div key={p.key} className='relative flex items-center gap-2'>
-								<CustomHandle
+								<MotionHandle
 									type='target'
 									position={Position.Left}
 									id={p.key}
@@ -65,17 +82,12 @@ function CustomNode({id, data, selected}: NodeProps) {
 						))}
 
 					{/* Generic add handle, only if there are connectable, unconnected params */}
-					{def.parameters.some(
-						(p) =>
-							p.acceptsConnections !== false &&
-							!connectedParamKeys.includes(p.key)
-					) ? (
+					{effectiveParams.some((p) => !connectedParamKeys.includes(p.key)) ? (
 						<div className='relative flex items-center gap-2'>
-							<CustomHandle
+							<MotionHandle
 								type='target'
 								position={Position.Left}
 								id='__new__'
-								variant='generic'
 								data-testid='handle-target-generic'
 								className='absolute -left-5.5!'
 							/>
@@ -85,7 +97,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 				</div>
 			) : null}
 
-			<CustomHandle
+			<MotionHandle
 				type='source'
 				position={Position.Right}
 				data-testid='handle-source'

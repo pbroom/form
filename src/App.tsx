@@ -1,6 +1,6 @@
 import {cn} from './lib/utils';
 import {ThemeProvider} from '@/components/theme-provider';
-import NodeGraphEditor from '@/components/NodeGraphEditor';
+import Editor from '@/components/Editor';
 import AppMenubar from '@/components/AppMenubar';
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
 			>
 				<AppMenubar />
 				<div className='flex-1 relative h-full'>
-					<NodeGraphEditor />
+					<Editor />
 				</div>
 			</div>
 		</ThemeProvider>

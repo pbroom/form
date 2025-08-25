@@ -8,17 +8,21 @@ import {
 	useEdgesState,
 	NodeTypes,
 	type OnConnectStart,
+	ConnectionLineType,
 } from '@xyflow/react';
 import type {GraphParameterValue} from '@/lib/ir/types';
 import '@xyflow/react/dist/style.css';
 import CustomNode, {NodeData} from './Node';
 import DraggableMinimap from './DraggableMinimap';
 import Viewport, {type ViewGraphState} from './Viewport';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import CommandPalette from './CommandPalette';
 import PropertiesPanel from './PropertiesPanel';
+import CodeViewPanel from './CodeViewPanel';
 import CodeExportModal from './CodeExportModal';
 import ParameterConnectionOverlay from './ParameterConnectionOverlay';
+import CustomEdge from './Edge';
+// import DynamicEdge from './DynamicEdge'; // Uncomment to use dynamic edge
 import {
 	validateConnection,
 	validateParameterValue,
@@ -31,11 +35,21 @@ import {
 } from '@/components/ui/resizable';
 import {DndContext} from '@dnd-kit/core';
 import {getNodeDefinition} from '@/lib/node-registry';
+import {validateCodeNodeSource} from '@/lib/validation/code-node';
+import GhostWireOverlay from './GhostWireOverlay';
+import {useConnectionStore} from '@/store/connection';
+import {extractFunctionParams} from '@/lib/code/code-parse';
 // Adapter imports removed (using curated list)
 
 // Define nodeTypes outside the component to prevent re-renders
 const nodeTypes: NodeTypes = {
 	custom: CustomNode,
+};
+
+// Define edgeTypes for custom edge rendering
+const edgeTypes = {
+	default: CustomEdge, // Use our custom edge with centered connections
+	// dynamic: DynamicEdge,  // Uncomment to use cursor-following edges
 };
 
 const curatedAdapterList = [
@@ -64,6 +78,12 @@ const initialNodes: Node<NodeData>[] = [
 		type: 'custom',
 		data: {typeKey: 'scene', label: 'Scene'},
 		position: {x: 320, y: 25},
+	},
+	{
+		id: 'code-1',
+		type: 'custom',
+		data: {typeKey: 'code', label: 'Code', params: {}},
+		position: {x: 320, y: -60},
 	},
 	{
 		id: 'box-1',
@@ -101,14 +121,33 @@ function NodeGraphEditor() {
 	const [isPaletteOpen, setPaletteOpen] = useState(false);
 	const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 	const [isExportOpen, setExportOpen] = useState(false);
+	const [codeByNodeId, setCodeByNodeId] = useState<Record<string, string>>({});
+	const [codeValidationMessage, setCodeValidationMessage] = useState<
+		string | null
+	>(null);
 
-	// Smart connection workflow state
-	const [connectionMode, setConnectionMode] = useState<{
-		sourceNodeId: string;
-		sourceHandle?: string;
-		targetNodeId?: string;
-		targetPosition?: {x: number; y: number};
-	} | null>(null);
+	// Connection workflow store
+	// token accessed via getToken()
+	const pendingFrom = useConnectionStore((s) => s.pendingFrom);
+	const sourceNodeId = useConnectionStore((s) => s.sourceNodeId);
+	const sourceHandle = useConnectionStore((s) => s.sourceHandle);
+	const startPoint = useConnectionStore((s) => s.startPoint);
+	const cursorPoint = useConnectionStore((s) => s.cursorPoint);
+	const targetNodeId = useConnectionStore((s) => s.targetNodeId);
+	const targetPosition = useConnectionStore((s) => s.targetPosition);
+	// didMove is used internally by the store
+	const startSource = useConnectionStore((s) => s.startSource);
+	const startTarget = useConnectionStore((s) => s.startTarget);
+	const hoverTarget = useConnectionStore((s) => s.hoverTarget);
+	const moveCursor = useConnectionStore((s) => s.moveCursor);
+	const endDrag = useConnectionStore((s) => s.endDrag);
+	const cancel = useConnectionStore((s) => s.cancel);
+	const resetPending = useConnectionStore((s) => s.reset);
+	const getToken = useConnectionStore((s) => s.getToken);
+
+	// Ref to overlay container for coordinate mapping
+	const editorContainerRef = useRef<HTMLDivElement | null>(null);
+	// useConnectionStore#getToken provides a monotonic token
 
 	// Validation state
 	const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
@@ -116,20 +155,48 @@ function NodeGraphEditor() {
 	);
 
 	// Handle smart connection workflow
-	const onConnectionStart: OnConnectStart = (_event, params) => {
-		setConnectionMode({
-			sourceNodeId: params.nodeId || '',
-			sourceHandle: params.handleId || undefined,
-		});
+	const onConnectionStart: OnConnectStart = (event, params) => {
+		// If a pending source already exists, ignore further starts until cancel/complete
+		if (sourceNodeId) return;
+		let sourceCenter: {x: number; y: number} | undefined;
+		try {
+			const nodeId = String(params.nodeId || '');
+			const container = editorContainerRef.current || document;
+			const nodeEl = container.querySelector(
+				`[data-testid^="node-"][data-testid$="-${nodeId}"]`
+			) as HTMLElement | null;
+			const handleEl = nodeEl
+				? (nodeEl.querySelector(
+						'[data-testid="handle-source"]'
+				  ) as HTMLElement | null)
+				: null;
+			const rect = (
+				handleEl || (event?.target as HTMLElement)
+			)?.getBoundingClientRect?.();
+			if (rect) {
+				sourceCenter = {
+					x: rect.left + rect.width / 2,
+					y: rect.top + rect.height / 2,
+				};
+			}
+		} catch {
+			/* ignore */
+		}
+
+		startSource(
+			params.nodeId || '',
+			params.handleId || null,
+			sourceCenter ?? {x: 0, y: 0}
+		);
 	};
 
 	const onConnectionEnd = () => {
-		// Reset connection mode if connection wasn't completed
-		setConnectionMode(null);
+		// End of drag: if the user actually dragged (moved), clear pending
+		endDrag();
 	};
 
 	const onNodeMouseEnter = (event: React.MouseEvent, node: Node<NodeData>) => {
-		if (connectionMode && connectionMode.sourceNodeId !== node.id) {
+		if (sourceNodeId && sourceNodeId !== node.id) {
 			const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
 			// Use screen coordinates directly for the overlay positioning
 			const screenPosition = {
@@ -137,40 +204,18 @@ function NodeGraphEditor() {
 				y: rect.top,
 			};
 
-			setConnectionMode((prev) =>
-				prev
-					? {
-							...prev,
-							targetNodeId: node.id,
-							targetPosition: screenPosition,
-					  }
-					: null
-			);
+			hoverTarget(node.id, screenPosition);
 		}
 	};
 
 	const onNodeMouseLeave = () => {
-		if (connectionMode) {
-			setConnectionMode((prev) =>
-				prev
-					? {
-							...prev,
-							targetNodeId: undefined,
-							targetPosition: undefined,
-					  }
-					: null
-			);
-		}
+		if (pendingFrom) resetPending();
 	};
 
 	const onParameterSelect = (parameterKey: string) => {
-		if (connectionMode && connectionMode.targetNodeId) {
-			const sourceNode = nodes.find(
-				(n) => n.id === connectionMode.sourceNodeId
-			);
-			const targetNode = nodes.find(
-				(n) => n.id === connectionMode.targetNodeId
-			);
+		if (sourceNodeId && targetNodeId) {
+			const sourceNode = nodes.find((n) => n.id === sourceNodeId);
+			const targetNode = nodes.find((n) => n.id === targetNodeId);
 
 			if (sourceNode && targetNode) {
 				// Validate the connection before creating it
@@ -189,16 +234,16 @@ function NodeGraphEditor() {
 					);
 				} else {
 					// Prevent self-connections
-					if (connectionMode.sourceNodeId === connectionMode.targetNodeId) {
+					if (sourceNodeId === targetNodeId) {
 						console.warn('Self-connections are not allowed');
 						return;
 					}
 
 					// Create the connection without an edge label (UX: labels belong to handles)
 					const params: Connection = {
-						source: connectionMode.sourceNodeId,
-						target: connectionMode.targetNodeId,
-						sourceHandle: connectionMode.sourceHandle || null,
+						source: sourceNodeId,
+						target: targetNodeId,
+						sourceHandle: sourceHandle || null,
 						targetHandle: parameterKey,
 					};
 
@@ -207,12 +252,254 @@ function NodeGraphEditor() {
 			}
 		}
 
-		setConnectionMode(null);
+		resetPending();
 	};
 
 	const onCancelConnection = () => {
-		setConnectionMode(null);
+		resetPending();
 	};
+
+	// Track cursor and allow ESC to cancel while waiting for second click
+	useEffect(() => {
+		if (!pendingFrom) return;
+		const onMove = (e: MouseEvent) => {
+			moveCursor({x: e.clientX, y: e.clientY});
+		};
+		const onUp = () => {
+			endDrag();
+		};
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				e.stopPropagation();
+				cancel();
+			}
+		};
+		window.addEventListener('mousemove', onMove, {capture: true});
+		window.addEventListener('mouseup', onUp, {capture: true});
+		window.addEventListener('keydown', onKey, {capture: true});
+		return () => {
+			window.removeEventListener('mousemove', onMove, {
+				capture: true,
+			} as AddEventListenerOptions);
+			window.removeEventListener('mouseup', onUp, {
+				capture: true,
+			} as AddEventListenerOptions);
+			window.removeEventListener('keydown', onKey, {
+				capture: true,
+			} as AddEventListenerOptions);
+		};
+	}, [pendingFrom, moveCursor, endDrag, cancel]);
+
+	// Start pending connection on source handle mousedown (supports click→click)
+	useEffect(() => {
+		const onSourceDown = (e: MouseEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (!target) return;
+			// Only when not already pending
+			if (sourceNodeId) return;
+			const handleEl = target.closest(
+				'[data-testid="handle-source"]'
+			) as HTMLElement | null;
+			if (!handleEl) return;
+			const nodeEl = handleEl.closest('[data-node-id]') as HTMLElement | null;
+			if (!nodeEl) return;
+			const nodeId = nodeEl.getAttribute('data-node-id') || '';
+			if (!nodeId) return;
+			const rect = handleEl.getBoundingClientRect();
+			const center = {
+				x: rect.left + rect.width / 2,
+				y: rect.top + rect.height / 2,
+			};
+			startSource(nodeId, null, center);
+		};
+		window.addEventListener('mousedown', onSourceDown, {capture: true});
+		return () =>
+			window.removeEventListener('mousedown', onSourceDown, {
+				capture: true,
+			} as AddEventListenerOptions);
+	}, [sourceNodeId, startSource]);
+
+	// Start pending from target handle (click→click starting at input)
+	useEffect(() => {
+		const onTargetDownStart = (e: MouseEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (!target) return;
+			if (sourceNodeId) return; // already pending
+			const handleParamEl = target.closest(
+				'[data-testid^="handle-target-param-"]'
+			) as HTMLElement | null;
+			const handleGenericEl = target.closest(
+				'[data-testid="handle-target-generic"]'
+			) as HTMLElement | null;
+			const handleEl = handleParamEl || handleGenericEl;
+			if (!handleEl) return;
+			const nodeEl = handleEl.closest('[data-node-id]') as HTMLElement | null;
+			if (!nodeEl) return;
+			const nodeId = nodeEl.getAttribute('data-node-id') || '';
+			if (!nodeId) return;
+			const rect = handleEl.getBoundingClientRect();
+			const center = {
+				x: rect.left + rect.width / 2,
+				y: rect.top + rect.height / 2,
+			};
+			const paramMatch = handleParamEl
+				?.getAttribute('data-testid')
+				?.match(/^handle-target-param-(.+)$/);
+			const startHandle = paramMatch
+				? paramMatch[1]
+				: handleGenericEl
+				? '__new__'
+				: undefined;
+			startTarget(nodeId, startHandle ?? null, center, {
+				x: rect.left,
+				y: rect.top,
+			});
+		};
+		window.addEventListener('mousedown', onTargetDownStart, {capture: true});
+		return () =>
+			window.removeEventListener('mousedown', onTargetDownStart, {
+				capture: true,
+			} as AddEventListenerOptions);
+	}, [sourceNodeId, startTarget]);
+
+	// Click→click: when pending and the user clicks a target handle, connect or open chooser
+	useEffect(() => {
+		if (!sourceNodeId) return;
+		const onClick = (e: MouseEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (!target) return;
+			// Ignore if a newer cancel token has been issued
+			const myToken = getToken();
+			if (myToken === getToken()) {
+				const handleParamEl = target.closest(
+					'[data-testid^="handle-target-param-"]'
+				) as HTMLElement | null;
+				const handleGenericEl = target.closest(
+					'[data-testid="handle-target-generic"]'
+				) as HTMLElement | null;
+				const handleEl = handleParamEl || handleGenericEl;
+				if (!handleEl) return;
+				const nodeEl = handleEl.closest('[data-node-id]') as HTMLElement | null;
+				if (!nodeEl) return;
+				const nodeId = nodeEl.getAttribute('data-node-id') || '';
+				if (!sourceNodeId || nodeId === sourceNodeId) return;
+				// If clicking a concrete param handle, connect immediately
+				const paramMatch = handleParamEl
+					?.getAttribute('data-testid')
+					?.match(/^handle-target-param-(.+)$/);
+				const paramKey = paramMatch ? paramMatch[1] : undefined;
+				if (paramKey) {
+					const params: Connection = {
+						source: sourceNodeId,
+						target: nodeId,
+						sourceHandle: sourceHandle ?? null,
+						targetHandle: paramKey,
+					};
+					if (myToken === getToken()) setEdges((eds) => addEdge(params, eds));
+					resetPending();
+				} else {
+					// Generic handle: position chooser overlay
+					const rect = nodeEl.getBoundingClientRect();
+					hoverTarget(nodeId, {x: rect.left, y: rect.top});
+				}
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		};
+		const onMouseDown = (e: MouseEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (!target) return;
+			const handleEl = target.closest(
+				'[data-testid^="handle-target-"]'
+			) as HTMLElement | null;
+			if (!handleEl) return;
+			const nodeEl = handleEl.closest('[data-node-id]') as HTMLElement | null;
+			if (!nodeEl) return;
+			const nodeId = nodeEl.getAttribute('data-node-id') || '';
+			if (!nodeId || nodeId === sourceNodeId) return;
+			const hRect = handleEl.getBoundingClientRect();
+			// Anchor overlay near the handle
+			hoverTarget(nodeId, {x: hRect.left, y: hRect.top});
+			e.preventDefault();
+			e.stopPropagation();
+		};
+		window.addEventListener('click', onClick, {capture: true});
+		window.addEventListener('mousedown', onMouseDown, {capture: true});
+		return () => {
+			window.removeEventListener('click', onClick, {
+				capture: true,
+			} as AddEventListenerOptions);
+			window.removeEventListener('mousedown', onMouseDown, {
+				capture: true,
+			} as AddEventListenerOptions);
+		};
+	}, [
+		sourceNodeId,
+		sourceHandle,
+		getToken,
+		setEdges,
+		resetPending,
+		hoverTarget,
+	]);
+
+	// Click→click: when pending from target, clicking a source handle should connect
+	useEffect(() => {
+		if (pendingFrom !== 'target') return;
+		const onSourceClick = (e: MouseEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (!target) return;
+			const myToken = getToken();
+			const handleEl = target.closest(
+				'[data-testid="handle-source"]'
+			) as HTMLElement | null;
+			if (!handleEl) return;
+			const nodeEl = handleEl.closest('[data-node-id]') as HTMLElement | null;
+			if (!nodeEl) return;
+			const sourceId = nodeEl.getAttribute('data-node-id') || '';
+			if (!sourceId || !targetNodeId) return;
+			let targetHandle: string | null = null;
+			if (!targetHandle || targetHandle === '__new__') {
+				const def = getNodeDefinition(
+					String(nodes.find((n) => n.id === targetNodeId)?.data.typeKey || '')
+				);
+				if (def && def.parameters?.length) {
+					const alreadyConnectedKeys = edges
+						.filter(
+							(e2) => e2.target === targetNodeId && Boolean(e2.targetHandle)
+						)
+						.map((e2) => String(e2.targetHandle));
+					const nextParam = def.parameters.find(
+						(p) => !alreadyConnectedKeys.includes(p.key)
+					);
+					if (nextParam) targetHandle = nextParam.key;
+				}
+			}
+			const params: Connection = {
+				source: sourceId,
+				target: targetNodeId,
+				sourceHandle: null,
+				targetHandle: targetHandle ?? null,
+			};
+			if (myToken === getToken()) setEdges((eds) => addEdge(params, eds));
+			resetPending();
+			e.preventDefault();
+			e.stopPropagation();
+		};
+		window.addEventListener('click', onSourceClick, {capture: true});
+		return () =>
+			window.removeEventListener('click', onSourceClick, {
+				capture: true,
+			} as AddEventListenerOptions);
+	}, [
+		nodes,
+		edges,
+		setEdges,
+		sourceNodeId,
+		targetNodeId,
+		getToken,
+		resetPending,
+	]);
 
 	const onConnect = (params: Connection) =>
 		setEdges((eds) => {
@@ -249,7 +536,10 @@ function NodeGraphEditor() {
 					}
 				}
 			}
-			return addEdge({...params, targetHandle}, eds);
+			const next = addEdge({...params, targetHandle}, eds);
+			// Clear pending state once a connection is created (drag complete)
+			resetPending();
+			return next;
 		});
 
 	const connectProgrammatically = (sourceId: string, targetId: string) => {
@@ -329,6 +619,32 @@ function NodeGraphEditor() {
 				.map((n) => ({...n, selected: false} as Node<NodeData>))
 				.concat({...newNode, selected: true} as Node<NodeData>)
 		);
+		setSelectedNodeId(newId);
+	};
+
+	const addCodeNode = () => {
+		const newId = `code-${Date.now()}`;
+		const newNode: Node<NodeData> = {
+			id: newId,
+			type: 'custom',
+			data: {
+				typeKey: 'code',
+				label: 'Code',
+				params: {},
+			},
+			position: {
+				x: Math.random() * 400,
+				y: Math.random() * 400,
+			},
+		};
+		setNodes((nds) =>
+			nds
+				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.concat({...newNode, selected: true} as Node<NodeData>)
+		);
+		// Initialize default code template
+		const template = `export function node(a: number, b: number): number {\n  return a + b;\n}`;
+		setCodeByNodeId((prev) => ({...prev, [newId]: prev[newId] ?? template}));
 		setSelectedNodeId(newId);
 	};
 
@@ -503,6 +819,10 @@ function NodeGraphEditor() {
 				if (Number.isNaN(a) || Number.isNaN(b)) return undefined;
 				return (type === 'add' ? a + b : a * b) as GraphParameterValue;
 			}
+			if (type === 'code') {
+				// Inputs will be derived from code in a future step; for now, output is undefined
+				return undefined;
+			}
 			return undefined;
 		};
 
@@ -595,6 +915,7 @@ function NodeGraphEditor() {
 		{id: 'new-box', label: 'Insert Box', action: addBoxNode},
 		{id: 'new-render', label: 'Insert Render', action: addRenderNode},
 		{id: 'new-camera', label: 'Insert Camera', action: addCameraNode},
+		{id: 'new-code', label: 'Insert Code Node', action: addCodeNode},
 		...adapterCommands,
 		{
 			id: 'export-code',
@@ -621,11 +942,65 @@ function NodeGraphEditor() {
 
 	const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
+	// Debounced validation for code view
+	useEffect(() => {
+		const isCodeNode = selectedNode?.data?.typeKey === 'code';
+		if (!isCodeNode) {
+			setCodeValidationMessage(null);
+			return;
+		}
+		// Ensure an existing code node has the default template if empty
+		const defaultTemplate = `export function node(a: number, b: number): number {\n  return a + b;\n}`;
+		if (selectedNode && !codeByNodeId[selectedNode.id]) {
+			setCodeByNodeId((prev) => ({
+				...prev,
+				[selectedNode.id]: defaultTemplate,
+			}));
+		}
+		const current = selectedNode
+			? codeByNodeId[selectedNode.id] ?? defaultTemplate
+			: defaultTemplate;
+		const handle = setTimeout(() => {
+			const res = validateCodeNodeSource(current);
+			setCodeValidationMessage(res.ok ? null : res.message || 'Invalid code');
+			if (res.ok && selectedNode) {
+				const parsed = extractFunctionParams(current);
+				if (parsed.ok) {
+					// attach dynamic params to node data
+					setNodes((prev) =>
+						prev.map((n) =>
+							n.id === selectedNode.id
+								? ({
+										...n,
+										data: {
+											...n.data,
+											dynamicParams: parsed.params.map((p) => ({
+												key: p.key,
+												label: p.key,
+												type: p.type,
+											})),
+										},
+								  } as Node<NodeData>)
+								: n
+						)
+					);
+				}
+			}
+		}, 250);
+		return () => clearTimeout(handle);
+	}, [
+		codeByNodeId,
+		selectedNode,
+		selectedNode?.id,
+		selectedNode?.data?.typeKey,
+		setNodes,
+	]);
+
 	return (
 		<div className='w-full h-full'>
 			<ResizablePanelGroup direction='horizontal' className='h-full w-full'>
 				{/* Left side: vertical split with viewport (top) and editor (bottom) */}
-				<ResizablePanel defaultSize={80} minSize={40} className='relative'>
+				<ResizablePanel defaultSize={60} minSize={40} className='relative'>
 					<ResizablePanelGroup direction='vertical' className='h-full w-full'>
 						{/* Top: Viewport */}
 						<ResizablePanel
@@ -638,12 +1013,13 @@ function NodeGraphEditor() {
 						<ResizableHandle />
 						{/* Bottom: Node editor */}
 						<ResizablePanel defaultSize={50} minSize={30}>
-							<div className='relative h-full w-full'>
+							<div className='relative h-full w-full' ref={editorContainerRef}>
 								<DndContext>
 									<ReactFlow
 										nodes={nodes}
 										edges={edges}
 										nodeTypes={nodeTypes}
+										edgeTypes={edgeTypes}
 										onNodesChange={onNodesChange}
 										onEdgesChange={onEdgesChange}
 										onConnect={onConnect}
@@ -651,6 +1027,13 @@ function NodeGraphEditor() {
 										onConnectEnd={onConnectionEnd}
 										onNodeMouseEnter={onNodeMouseEnter}
 										onNodeMouseLeave={onNodeMouseLeave}
+										connectionLineType={ConnectionLineType.Bezier}
+										connectionLineStyle={{
+											strokeDasharray: '6 6',
+											opacity: 0.4,
+											strokeWidth: 2,
+										}}
+										defaultEdgeOptions={{type: 'default'}}
 										fitView
 										className='bg-background text-foreground'
 										style={{width: '100%', height: '100%'}}
@@ -662,27 +1045,35 @@ function NodeGraphEditor() {
 										<DraggableMinimap />
 									</ReactFlow>
 
+									{/* Ghost wire overlay (pending connection) */}
+									{startPoint && cursorPoint ? (
+										<GhostWireOverlay
+											containerRef={
+												editorContainerRef as React.RefObject<HTMLDivElement | null>
+											}
+											start={startPoint}
+											end={cursorPoint}
+										/>
+									) : null}
+
 									{/* Parameter connection overlay */}
-									{connectionMode?.targetNodeId &&
-										connectionMode.targetPosition && (
-											<ParameterConnectionOverlay
-												nodeData={
-													nodes.find(
-														(n) => n.id === connectionMode.targetNodeId
-													)?.data || {typeKey: 'unknown'}
+									{targetNodeId && targetPosition && (
+										<ParameterConnectionOverlay
+											nodeData={
+												nodes.find((n) => n.id === targetNodeId)?.data || {
+													typeKey: 'unknown',
 												}
-												nodePosition={connectionMode.targetPosition}
-												connectedParameters={edges
-													.filter(
-														(e) =>
-															e.target === connectionMode.targetNodeId &&
-															e.targetHandle
-													)
-													.map((e) => e.targetHandle!)}
-												onParameterSelect={onParameterSelect}
-												onCancel={onCancelConnection}
-											/>
-										)}
+											}
+											nodePosition={targetPosition}
+											connectedParameters={edges
+												.filter(
+													(e) => e.target === targetNodeId && e.targetHandle
+												)
+												.map((e) => e.targetHandle!)}
+											onParameterSelect={onParameterSelect}
+											onCancel={onCancelConnection}
+										/>
+									)}
 								</DndContext>
 							</div>
 						</ResizablePanel>
@@ -698,20 +1089,48 @@ function NodeGraphEditor() {
 					/>
 				</ResizablePanel>
 				<ResizableHandle />
-				{/* Right side: full-height Properties Panel */}
+				{/* Right side: full-height Code View (left) + Properties (right) */}
 				<ResizablePanel
-					defaultSize={20}
-					minSize={20}
-					className='border-l border-border bg-background overflow-auto'
+					defaultSize={40}
+					minSize={30}
+					className='border-l border-border bg-background overflow-hidden'
 				>
-					<PropertiesPanel
-						node={selectedNode}
-						onParamChange={handleParamChange}
-						onLabelChange={handleLabelChange}
-						validationErrors={validationErrors.filter(
-							(e) => e.nodeId === selectedNodeId
-						)}
-					/>
+					<ResizablePanelGroup direction='horizontal' className='h-full w-full'>
+						<ResizablePanel
+							defaultSize={60}
+							minSize={20}
+							className='overflow-auto'
+						>
+							<CodeViewPanel
+								node={selectedNode}
+								value={selectedNode ? codeByNodeId[selectedNode.id] ?? '' : ''}
+								onChange={(val) => {
+									if (selectedNode) {
+										setCodeByNodeId((prev) => ({
+											...prev,
+											[selectedNode.id]: val,
+										}));
+									}
+								}}
+								validationMessage={codeValidationMessage}
+							/>
+						</ResizablePanel>
+						<ResizableHandle />
+						<ResizablePanel
+							defaultSize={40}
+							minSize={40}
+							className='overflow-auto'
+						>
+							<PropertiesPanel
+								node={selectedNode}
+								onParamChange={handleParamChange}
+								onLabelChange={handleLabelChange}
+								validationErrors={validationErrors.filter(
+									(e) => e.nodeId === selectedNodeId
+								)}
+							/>
+						</ResizablePanel>
+					</ResizablePanelGroup>
 				</ResizablePanel>
 			</ResizablePanelGroup>
 		</div>

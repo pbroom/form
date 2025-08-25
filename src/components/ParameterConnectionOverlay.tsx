@@ -1,7 +1,14 @@
-import {useEffect, useRef} from 'react';
-import {cn} from '@/lib/utils';
+import {useEffect, useRef, useState} from 'react';
 import {getNodeDefinition} from '@/lib/node-registry';
 import type {NodeData} from './Node';
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from '@/components/ui/command';
 
 interface ParameterConnectionOverlayProps {
 	nodeData: NodeData;
@@ -21,6 +28,7 @@ export default function ParameterConnectionOverlay({
 	const def = getNodeDefinition(nodeData.typeKey);
 	const emptyRef = useRef<HTMLDivElement | null>(null);
 	const overlayRef = useRef<HTMLDivElement | null>(null);
+	const [query, setQuery] = useState('');
 
 	if (!def?.parameters?.length) {
 		return null;
@@ -31,6 +39,13 @@ export default function ParameterConnectionOverlay({
 		(param) =>
 			param.acceptsConnections !== false &&
 			!connectedParameters.includes(param.key)
+	);
+
+	const filtered = availableParameters.filter(
+		(p) =>
+			p.label.toLowerCase().includes(query.toLowerCase()) ||
+			p.key.toLowerCase().includes(query.toLowerCase()) ||
+			String(p.type).toLowerCase().includes(query.toLowerCase())
 	);
 
 	if (availableParameters.length === 0) {
@@ -59,38 +74,42 @@ export default function ParameterConnectionOverlay({
 	}, [nodePosition.x, nodePosition.y]);
 
 	return (
-		<div
-			ref={overlayRef}
-			className='absolute z-50 bg-popover border border-border rounded-md p-1 shadow-md min-w-40'
-		>
-			<div className='text-xs font-medium text-foreground p-1 border-b border-border/50'>
-				Connect to parameter:
-			</div>
-			<div className='space-y-0.5 p-1'>
-				{availableParameters.map((param) => (
+		<div ref={overlayRef} className='absolute z-50 min-w-52 shadow-md'>
+			<Command className='border border-border rounded-md bg-popover'>
+				<CommandInput
+					autoFocus
+					placeholder='Search parameters...'
+					value={query}
+					onValueChange={setQuery as any}
+				/>
+				<CommandList>
+					<CommandEmpty>No matching parameters.</CommandEmpty>
+					<CommandGroup heading='Available'>
+						{filtered.map((param) => (
+							<CommandItem
+								key={param.key}
+								value={param.key}
+								onSelect={() => onParameterSelect(param.key)}
+							>
+								<div className='flex w-full items-center justify-between text-xs'>
+									<span>{param.label}</span>
+									<span className='text-muted-foreground text-[10px]'>
+										{param.type}
+									</span>
+								</div>
+							</CommandItem>
+						))}
+					</CommandGroup>
+				</CommandList>
+				<div className='border-t border-border/50 p-1'>
 					<button
-						key={param.key}
-						className={cn(
-							'w-full text-left px-2 py-1 text-xs rounded hover:bg-accent hover:text-accent-foreground',
-							'flex items-center justify-between gap-2'
-						)}
-						onClick={() => onParameterSelect(param.key)}
+						className='w-full text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-accent'
+						onClick={onCancel}
 					>
-						<span>{param.label}</span>
-						<span className='text-muted-foreground text-[10px]'>
-							{param.type}
-						</span>
+						Cancel
 					</button>
-				))}
-			</div>
-			<div className='border-t border-border/50 p-1'>
-				<button
-					className='w-full text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-accent'
-					onClick={onCancel}
-				>
-					Cancel
-				</button>
-			</div>
+				</div>
+			</Command>
 		</div>
 	);
 }

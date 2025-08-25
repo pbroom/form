@@ -13,7 +13,7 @@
 
 - [ ] Create Code Node from palette; selecting it shows a dedicated Code tab in properties
 - [ ] In-editor code panel accepts a single exported function with typed inputs/outputs
-- [ ] Type extraction maps function signature to sockets (inputs → target params, output → source)
+- [ ] Type extraction maps function signature to sockets (inputs → target params, output → source). Code Node always has a single source/out port; input ports are 100% dynamic from code
 - [ ] Metadata block configures label, appearance, parameter UI hints, defaults, and validation
 - [ ] Properties panel auto-renders controls from extracted types/metadata
 - [ ] Type-aware connections enforced (cannot connect incompatible sockets)
@@ -35,7 +35,7 @@
   - Tests (TDD): Schema pass/fail; IR ops invariants for add/update/remove; snapshot of serialized Code Node
   - Steps: IR types → Zod schema → registry entry → mapper integration
   - Estimate: M
-  - Status: Not started
+  - Status: In progress
 
 - Effort: Code View Panel (Standalone) & Properties Integration
 
@@ -53,13 +53,15 @@
   - Tests (TDD): UI render test for Code tab; debounced onChange unit; validation message rendering
   - Steps: Properties panel tab → editor component → validation plumbing → UX polish
   - Estimate: M
-  - Status: Not started
+  - Status: In progress
+  - Notes:
+    - Added shared `initialNodes` module for editor initialization reuse in V2 editor
 
 - Effort: Type Extraction & Socket Generation
 
   - Tasks:
     - [ ] Use TypeScript compiler API (or lightweight parser) to extract function inputs/outputs
-    - [ ] Map extracted types to parameter definitions and socket directions
+    - [ ] Map extracted inputs to dynamic target handles; maintain a single always-present source handle
     - [ ] Support primitives (number, string, boolean), arrays, tuples, and Vector-like structs
     - [ ] Generate UI control hints from metadata (ranges, enums, color, step)
   - ACs:
@@ -68,7 +70,7 @@
   - Tests (TDD): Parser unit tests across type matrix; socket generation snapshots; error cases
   - Steps: Parse → normalize types → build param/socket model → integrate with properties
   - Estimate: L
-  - Status: Not started
+  - Status: In progress
 
 - Effort: Safe Runtime Preview (Sandboxed Execution)
 
@@ -102,6 +104,7 @@
 
   - Tasks:
     - [ ] Support click-and-release on a source handle to set a pending connection
+    - [ ] Render a low-opacity dashed ghost wire from source handle to cursor while pending
     - [ ] Clicking a target node's input handle opens a Shadcn Command-based searchable list of compatible parameters
     - [ ] Filter parameters by type compatibility; show labels, groups; keyboard navigation (search, arrows, enter)
     - [ ] Selecting a parameter creates edge with `targetHandle` set; cancel clears pending state (Esc/click-outside)
@@ -109,9 +112,12 @@
     - [ ] Add `data-testid` hooks for E2E
   - ACs:
     - [ ] No drag required: click source, release; click target → chooser appears and connects on selection
+    - [ ] A ghost wire follows the cursor between clicks at ~40–50% opacity and dashed style
+    - [ ] Pressing Esc at any time during pending state cancels it and removes the ghost wire
     - [ ] Only compatible parameters are shown; search filters list; keyboard and mouse supported
     - [ ] Edge is created deterministically with correct `targetHandle`; cancel restores neutral state
   - Tests (TDD): Playwright flow tests for click→click connect; unit tests for type filter and pending-connection state machine
+    - [ ] e2e: drag preview path visible during drag; ghost preview visible after click; Esc cancels and hides preview
   - Steps: Pending state → handle event wiring → Shadcn Command chooser → type filter → edge creation → UX polish
   - Estimate: M
   - Status: Not started
