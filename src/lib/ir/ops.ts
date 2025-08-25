@@ -1,4 +1,4 @@
-import type {GraphEdge, GraphLayer, GraphNode} from './types';
+import type {GraphEdge, GraphLayer, GraphNode, GraphParameterValue} from './types';
 
 export function createEmptyGraph(): GraphLayer {
 	return {nodes: [], edges: []};
@@ -40,7 +40,7 @@ export function setParam(
 	graph: GraphLayer,
 	nodeId: string,
 	key: string,
-	value: unknown
+	value: GraphParameterValue
 ): GraphLayer {
 	return {
 		nodes: graph.nodes.map((n) =>

@@ -69,7 +69,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
 			targetPosition: null,
 			didMove: false,
 		}),
-	startTarget: (nodeId, handleId, startPoint, overlayTopLeft) =>
+	startTarget: (nodeId, _handleId, startPoint, overlayTopLeft) =>
 		set({
 			pendingFrom: 'target',
 			sourceNodeId: null,

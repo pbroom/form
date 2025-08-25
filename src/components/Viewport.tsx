@@ -105,7 +105,6 @@ function IRNode({
  */
 function findConnectedNodes(
 	renderNodeId: string,
-	nodes: GraphNode[],
 	edges: GraphEdge[]
 ): Set<string> {
 	const connected = new Set<string>();
@@ -191,7 +190,7 @@ function IRScene({module}: {module: IRModule}) {
 
 	// For each render node, trace back connections and build hierarchy
 	const sceneContent = renderNodes.map((renderNode) => {
-		const connectedNodes = findConnectedNodes(renderNode.id, nodes, edges);
+		const connectedNodes = findConnectedNodes(renderNode.id, edges);
 		return buildSceneHierarchy(
 			renderNode.id,
 			nodes,

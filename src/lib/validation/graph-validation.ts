@@ -1,9 +1,5 @@
 import {Node, Edge} from '@xyflow/react';
-import {
-	getNodeDefinition,
-	type ValidationError,
-	type NodeTypeDefinition,
-} from '@/lib/node-registry';
+import {getNodeDefinition, type ValidationError} from '@/lib/node-registry';
 import type {NodeData} from '@/components/Node';
 
 /**
