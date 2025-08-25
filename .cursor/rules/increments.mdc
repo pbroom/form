@@ -79,6 +79,10 @@ Each entry:
 
 If information is unknown, write a short placeholder and fill it on the next turn.
 
+## Source of Truth
+
+- Architecture reference: `docs/architecture/ARCHITECTURE.md` is the canonical source for product/architecture. Prefer it over `docs/architecture/prd.md` when resolving intent or details. Keep PRD as supplemental context only.
+
 ## Project Log (PL)
 
 - At the close of each increment (when IC exit criteria are satisfied):

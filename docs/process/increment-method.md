@@ -78,6 +78,10 @@ This ensures good ideas aren't lost while maintaining focus on current prioritie
 
 See `docs/increments/_templates/charter.template.md` and `docs/increments/_templates/log.template.md`.
 
+## Source of Truth
+
+- For system intent, modules, and roadmap, refer to `docs/architecture/ARCHITECTURE.md` as the canonical document. The PRD (`docs/architecture/prd.md`) is supportive context and may lag behind.
+
 ## Project Log
 
 - At the end of each increment, update `docs/project-log.md` with a concise, human-readable summary (outcomes, artifacts, decisions, learnings)
