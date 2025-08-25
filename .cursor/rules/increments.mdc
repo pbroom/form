@@ -1,0 +1,148 @@
+---
+alwaysApply: false
+---
+
+# Increment Method (Lean TDD for Humans + LLMs) — Cursor Rule
+
+**Purpose:** Guarantee that after _any_ meaningful change (code/docs/tests), the **Increment Charter (IC)** and **Increment Log (IL)** are updated _in the repo_, even if the agent loses conversation memory (new tab, model switch, cleared context). Also ensure the **Project Log (PL)** is updated at increment close to capture top-level outcomes.
+
+## Canonical Paths & Templates
+
+- Increments live under `docs/increments/`.
+- Each increment has `charter.md` and `log.md`.
+- Templates:
+  - Charter: `docs/increments/_templates/charter.template.md`
+  - Log: `docs/increments/_templates/log.template.md`
+- Project log: `docs/project-log.md`
+
+If an expected file is missing, create it from the template **immediately** and continue.
+
+## CURRENT Increment — Deterministic Selection
+
+**Algorithm (always run at the start of a turn):**
+
+1. List directories `docs/increments/pi-*` in ascending order by n.
+2. For each `pi-N`:
+   - Open `charter.md` and search for a line containing either:
+     - `✅ Done` **or**
+     - `Status: Done` (exact string anywhere in the document).
+   - The **current increment** is the _first_ `pi-N` whose charter does **not** indicate Done.
+3. If no increments exist:
+
+   - Create `docs/increments/pi-1/charter.md` from the charter template,
+   - Create empty `docs/increments/pi-1/log.md` (header + section),
+   - Set `pi-1` as current.
+
+> Always re-run this selection after a model switch, new tab, or context clear.
+
+## Turn Invariants (must be true before ending your turn)
+
+1. **IC/IL Sync:** If any code/docs/tests were created/edited:
+
+   - **Charter updated** (tasks/ACs/status/tests/steps reflect the change).
+   - **Log entry appended** (concise summary with bullets).
+
+2. **Tests executed** after substantive edits:
+
+   - Default unit: `npm test -- tests/unit/`
+   - If failures look trivial, fix once and re-run. Otherwise, record failures verbatim in IL and stop.
+
+3. **No silent success:** If you could not locate/update IC/IL, create from template (see above) and record that in IL.
+4. **Idempotency:** All updates must be safe to apply twice without duplication:
+
+   - Use bullet insertion (append-only) for IL.
+   - Edit Charter by toggling task checkboxes and updating status lines rather than rewriting sections wholesale.
+
+**If any invariant cannot be met, the turn must end with an IL entry describing why and what is needed.**
+
+## TDD Loop (per task)
+
+1. Confirm/define ACs + tests in the **Charter** (under the relevant Effort).
+2. Write tests/fixtures (failing first).
+3. Minimal implementation.
+4. Make tests pass; refactor.
+5. **Post-Action Sync (required):** Update Charter status and append IL entry (see format) _before responding_.
+
+## Increment Log (IL) Entry Format (append-only)
+
+Each entry:
+
+- **Summary:** 1–2 plain sentences.
+- **Bullets (3–6):**
+
+  - **Action:** what changed
+  - **Files/Areas:** paths touched
+  - **Decisions:** key choices/rationale
+  - **Issues/Risks:** blockers, flakiness, unknowns
+  - **Learnings:** notable insights
+  - **Tests/Artifacts:** names/links; test result summary (e.g., “18 passed, 2 failed”)
+
+If information is unknown, write a short placeholder and fill it on the next turn.
+
+## Project Log (PL)
+
+- At the close of each increment (when IC exit criteria are satisfied):
+
+  - Append an entry to `docs/project-log.md`.
+  - Entry should summarize increment outcomes, major efforts, key decisions, learnings, risks, and provide links to IC/IL.
+
+- PL update is **mandatory at increment exit** but optional mid-increment unless major cross-cutting decisions occur.
+
+## Recovery on Context Loss (new tab/model/cleared chat)
+
+When you detect a fresh context:
+
+1. **Rebuild context from disk** (do not trust memory):
+
+   - Run the CURRENT Increment selection algorithm.
+   - Read the current `charter.md` and `log.md` into working memory.
+
+2. **Self-check:**
+
+   - If Charter/Log are missing, create from template; write an IL entry “Initialize artifacts after context loss.”
+
+3. **Resume:** Proceed with the user’s request using the TDD Loop.
+
+## Execution Contract (applies to every slash command and freeform prompt)
+
+- Always run **CURRENT Increment selection** first.
+- Keep responses concise; include code/commands only when necessary.
+- Clarifying questions are allowed as needed; when asked, they should not stall progress — continue proposing the next concrete step.
+- Never mark an increment Done unless **all increment ACs are met** and **exit criteria** satisfied (tests green; demoable).
+
+## Post-Action Sync Hook (non-negotiable)
+
+Before ending your turn after any change:
+
+1. Edit `docs/increments/<current>/charter.md`:
+
+   - Update related Effort’s Tasks (checkboxes), ACs status, **Tests** and **Steps** subsections if they changed.
+   - Update Effort **Status**.
+
+2. Append IL entry to `docs/increments/<current>/log.md` using the format above.
+3. Run tests and capture a one-line result in IL. If failures remain, include failing test names.
+
+If any of 1–3 fails, append an IL entry stating the failure and required follow-up, then stop.
+
+## Slash Commands — Minimal, Deterministic Behavior
+
+`/p <prompt>`
+
+1. Select CURRENT increment and link its `charter.md` + `log.md` (absolute paths).
+2. Summarize `<prompt>` into a one-paragraph plan aligned to the Charter **Focus**.
+3. If scope changes, update Charter (Effort/Tasks/ACs/Tests/Steps/Status).
+4. Run TDD Loop.
+5. **Post-Action Sync**.
+
+`/p -f <feedback>`
+
+- Process via Context Analysis → Categorization → Priority → Integration Strategy.
+- Update Charter/PRD/backlog if relevant.
+- Append IL entry noting assessment and any changes.
+
+## Guardrails
+
+- Use absolute workspace paths when running commands.
+- Non-interactive flags only; avoid pagers.
+- Placeholders must be wrapped in backticks to avoid MD033.
+- If multiple increments appear active, pick the **lowest** `pi-N` not marked Done and write an IL note about the ambiguity.

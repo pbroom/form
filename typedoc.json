@@ -1,0 +1,11 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["src"],
+	"out": "docs/reference/api",
+	"tsconfig": "tsconfig.json",
+	"skipErrorChecking": true,
+	"excludeExternals": true,
+	"excludePrivate": true,
+	"excludeProtected": true,
+	"readme": "none"
+}

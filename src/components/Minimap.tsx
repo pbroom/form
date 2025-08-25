@@ -22,8 +22,10 @@ function CustomMinimap({className}: CustomMinimapProps) {
 		<MiniMap
 			nodeStrokeColor={nodeStrokeColor}
 			nodeColor={nodeColor}
+			// Force static positioning so parent can measure size
+			style={{position: 'static', margin: 0}}
 			className={cn(
-				'bg-muted/80! overflow-hidden backdrop-blur-sm border-[0.5px] border-border rounded-lg shadow-lg',
+				'block bg-muted/80! overflow-hidden backdrop-blur-sm border-[0.5px] border-border rounded-lg shadow-lg',
 				className
 			)}
 		/>
