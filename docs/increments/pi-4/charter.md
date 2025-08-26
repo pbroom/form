@@ -19,6 +19,7 @@
 ## Efforts
 
 - Effort: Sandbox Runtime
+
   - Tasks:
     - [ ] Timeout/abort controller; error surface
     - [ ] Deterministic execution with provided inputs
@@ -30,6 +31,7 @@
   - Status: Not started
 
 - Effort: Dynamic Sockets from Signature (Primitives)
+
   - Tasks:
     - [ ] Integrate parser into node definition → target handles
     - [ ] Refresh sockets on code change; persist params
@@ -41,6 +43,7 @@
   - Status: Not started
 
 - Effort: Codegen Integration (Minimal)
+
   - Tasks:
     - [ ] Emit function and wire output prop
     - [ ] Ensure imports/types only when referenced
