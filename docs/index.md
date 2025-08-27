@@ -4,4 +4,4 @@ Welcome to the project documentation. This site follows a docs-as-code approach 
 
 - Start with the [Getting Started guide](/guides/getting-started)
 - Learn the [Architecture overview](/architecture/overview)
-- Browse the [API Reference](/reference/api/)
+- Browse the [API Reference](/reference/)
