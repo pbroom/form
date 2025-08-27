@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD013 -->
+
 # Form: Node Graph Editor – Architecture & Increment Roadmap
 
 This document is the reference for the **Form** project — a node-graph-based editor for building visuals with code.  

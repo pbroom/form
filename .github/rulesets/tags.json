@@ -1,0 +1,7 @@
+{
+	"name": "Tags - Protected Releases",
+	"target": "tag",
+	"enforcement": "active",
+	"conditions": {"ref_name": {"include": ["~ALL"]}},
+	"rules": [{"type": "restrict_deletions"}]
+}

@@ -1,0 +1,33 @@
+# Trunk + Preview Integration: Agent Rules
+
+## Branches
+
+- Always work off `main`. Name branches `feat/pi-<n>-<slug>`, `fix/pi-<n>-<slug>`, `chore/pi-<n>-<slug>`, `spike/pi-<n>-<slug>`.
+- Keep PRs small (≤ ~400 LOC).
+
+## PRs
+
+- Target `main`. Use the PR template; link Charter & Log.
+- Apply labels on PRs: `include-in-preview` and optionally `increment:pi-<n>`.
+
+## Preview
+
+- Do not push directly to `preview/*`. Only automation updates preview branches.
+- To compose the preview branch, run the GitHub workflow:
+  - Terminal: `gh workflow run "Build Preview Integration Branch" -f increment=pi-3 -f include_label=include-in-preview`
+  - Or use the Actions UI and set `increment=pi-3`.
+
+## Exit
+
+- After preview validation, squash-merge to `main`, then tag `pi-<n>.0.0`.
+
+## Repo notes
+
+- Required checks on `main`: `typecheck`, `lint`, `test:golden`, `test:schema`, `build`.
+- Preview deploy is triggered by pushes to `preview/**`.
+
+description: Trunk + Preview integration rules for branches, PRs, preview, and release tags
+globs: [".github/workflows/**", ".github/**", "docs/**/*", "**/*.md", "**/*.mdc"]
+alwaysApply: false
+
+---

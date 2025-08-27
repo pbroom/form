@@ -1,0 +1,24 @@
+increment:pi-4:
+  - head-branch:
+      - '^feat/pi-4-'
+      - '^fix/pi-4-'
+      - '^chore/pi-4-'
+      - '^spike/pi-4-'
+type:feat:
+  - head-branch: ['^feat/']
+type:fix:
+  - head-branch: ['^fix/']
+type:chore:
+  - head-branch: ['^chore/']
+type:spike:
+  - head-branch: ['^spike/']
+touches-runtime:
+  - changed-files:
+      - any-glob-to-any-file: 'src/runtime/**'
+touches-auth:
+  - changed-files:
+      - any-glob-to-any-file: 'src/auth/**'
+touches-contracts:
+  - changed-files:
+      - any-glob-to-any-file: 'src/shared/contracts/**'
+      - any-glob-to-any-file: 'openapi/**'

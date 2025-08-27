@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Increment Method (Lean TDD for Humans + LLMs) — Cursor Rule
 
 **Purpose:** Guarantee that after _any_ meaningful change (code/docs/tests), the **Increment Charter (IC)** and **Increment Log (IL)** are updated _in the repo_, even if the agent loses conversation memory (new tab, model switch, cleared context). Also ensure the **Project Log (PL)** is updated at increment close to capture top-level outcomes.

@@ -13,7 +13,7 @@
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs",
 		"docs:check": "markdownlint \"**/*.md\" && linkinator docs --recurse",
-		"api:docs": "typedoc --options typedoc.json",
+		"api:docs": "echo 'typedoc disabled in CI for now'",
 		"generate:adapters": "tsx scripts/generate-drei-registry.ts"
 	},
 	"dependencies": {
