@@ -41,7 +41,7 @@
   - Tests (TDD): unit tests for schema mapping; UI presence tests
   - Steps: schema map → component bindings → debounce/update
   - Estimate: M
-  - Status: Not started
+  - Status: In progress
 
 - Effort: Command Log + Undo/Redo
 

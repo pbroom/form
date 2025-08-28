@@ -109,3 +109,14 @@ PR template streamlined for small PRs; trunk-preview rule notes added.
 - Issues/Risks: None
 - Learnings: Focused templates reduce friction when stacking many PRs
 - Tests/Artifacts: N/A
+
+## Entry 11
+
+Started "Properties from Schema" effort.
+
+- Action: Set effort status to In progress in Charter; preparing scaffold PR
+- Files/Areas: `docs/increments/pi-4/charter.md`
+- Decisions: Begin with schema→UI mapping for core types; debounce updates to preview
+- Issues/Risks: Lint rules and E2E configuration still pending; non-blocking
+- Learnings: Charter-driven status makes PR scoping clearer
+- Tests/Artifacts: Upcoming unit/UI tests for schema mapping
