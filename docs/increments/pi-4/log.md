@@ -98,3 +98,14 @@ Graphite setup for stacked PRs; submission blocked pending PAT.
 - Issues/Risks: Graphite lacks GitHub permissions; needs PAT to submit PRs
 - Learnings: Cumulative diffs via stacked PRs streamline Phase 1 integration review
 - Tests/Artifacts: N/A
+
+## Entry 10
+
+PR template streamlined for small PRs; trunk-preview rule notes added.
+
+- Action: Updated `.github/pull_request_template.md` to compact small-PR format; updated trunk-preview rule to reference compact template
+- Files/Areas: `.github/pull_request_template.md`, `.cursor/rules/trunk-preview.mdc`
+- Decisions: Keep each PR description narrowly scoped; rely on top PR for cumulative view
+- Issues/Risks: None
+- Learnings: Focused templates reduce friction when stacking many PRs
+- Tests/Artifacts: N/A
