@@ -18,3 +18,7 @@
 ## Exit
 
 - After preview validation, squash-merge PRs to `main`, then tag `pi-<n>.0.0`.
+
+## Tooling
+
+- Prefer pnpm for local installs (`pnpm i`). CI may use npm where necessary until a `pnpm-lock.yaml` is checked in.

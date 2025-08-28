@@ -4,6 +4,7 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
+		"preinstall": "node -e \"if (!process.env.CI && process.env.npm_execpath && !process.env.npm_execpath.includes('pnpm')) { console.error('Please use pnpm (npm i -g pnpm)'); process.exit(1) }\"",
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"lint": "eslint .",
