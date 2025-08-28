@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD041 -->
+
 ## PR Summary (Small, Focused)
 
 - **Increment**: pi-4 | **Effort**: `<effort-name>` (link Charter section)
