@@ -10,10 +10,23 @@
 - Target `main`. Use the PR template; link Charter & Log.
 - Apply labels on PRs: `include-in-preview` and optionally `increment:pi-<n>`.
 
+### Stacked PRs with Graphite
+
+- Use Graphite (gt) for stacked PRs:
+  - `gt create -m "feat(pi-<n>): <scope>"` to create focused PRs (100–400 LOC)
+  - Keep PRs draft until green; merge bottom-up frequently
+  - Top PR shows the cumulative diff for quick integration review
+- Submission:
+  - `gt submit --no-interactive` (drafts) and add labels via `gh pr edit <num> --add-label include-in-preview --add-label increment:pi-<n>`
+- Restacking:
+  - `gt restack` when `main` moves; fix conflicts at the lowest PR possible
+- Charter/Log:
+  - Update `docs/increments/pi-<n>/charter.md` status and append IL entries in each PR
+
 ## Preview
 
 - Do not push directly to `preview/*`. Only automation updates preview branches.
-- To compose the preview branch, run the GitHub workflow:
+- To compose the preview branch across many small PRs, run the GitHub workflow:
   - Terminal: `gh workflow run "Build Preview Integration Branch" -f increment=pi-3 -f include_label=include-in-preview`
   - Or use the Actions UI and set `increment=pi-3`.
 
