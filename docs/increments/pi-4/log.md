@@ -87,3 +87,14 @@ Realigned PI-4 Charter to Phase 1 (MVP Core) per ARCHITECTURE.md; created branch
 - Issues/Risks: Scope creep into Code Node runtime preview avoided; reserved for later phase
 - Learnings: Aligning with ARCHITECTURE phases clarifies acceptance criteria
 - Tests/Artifacts: Charter updated; follow-up to add tests per efforts
+
+## Entry 9
+
+Graphite setup for stacked PRs; submission blocked pending PAT.
+
+- Action: Installed/initialized Graphite; tracked current branch; created first stack commit; attempted submit
+- Files/Areas: local tools; `docs/increments/pi-4/charter.md` status set to In progress (Node Graph Essentials)
+- Decisions: Use Graphite to manage tiny PRs with cumulative top PR; fall back to `gh` if needed
+- Issues/Risks: Graphite lacks GitHub permissions; needs PAT to submit PRs
+- Learnings: Cumulative diffs via stacked PRs streamline Phase 1 integration review
+- Tests/Artifacts: N/A

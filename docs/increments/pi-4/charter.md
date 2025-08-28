@@ -29,7 +29,7 @@
   - Tests (TDD): Playwright specs for selection/connect; unit tests for IR ops
   - Steps: event wiring → state updates → a11y hooks
   - Estimate: M
-  - Status: Not started
+  - Status: In progress
 
 - Effort: Properties from Schema
 
