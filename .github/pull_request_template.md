@@ -9,11 +9,12 @@
 - [ ] AC-1 (from Charter): `<short>`
 - [ ] AC-2 (optional): `<short>`
 
-### Tests
+### Tests & Validation
 
 - [ ] unit: `<files/specs>`
 - [ ] snapshot/golden (if applicable)
 - [ ] e2e (if applicable)
+- [ ] Manual demo steps: `<how to validate end-to-end>`
 
 ### Docs & Increment Method
 

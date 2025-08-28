@@ -3,7 +3,7 @@
 ## Branches
 
 - Always work off `main`. Name branches `feat/pi-<n>-<slug>`, `fix/pi-<n>-<slug>`, `chore/pi-<n>-<slug>`, `spike/pi-<n>-<slug>`.
-- Keep PRs small (≤ ~400 LOC).
+- Prefer cohesive, testable vertical slices over micro-PRs. Typical size guideline: 100–800 LOC when the change is self‑contained and demoable.
 
 ## PRs
 
@@ -13,10 +13,12 @@
 ### Stacked PRs with Graphite
 
 - Use Graphite (gt) for stacked PRs:
-  - `gt create -m "feat(pi-<n>): <scope>"` to create focused PRs (100–400 LOC)
+  - `gt create -m "feat(pi-<n>): <scope>"` to create focused, testable PRs
+  - Avoid PRs that only update logs/docs without delivering runnable value; batch such changes into nearby functional PRs
   - Keep PRs draft until green; merge bottom-up frequently
-  - Top PR shows the cumulative diff for quick integration review
+  - Top PR shows the cumulative diff for integration review; use preview workflow or an integration branch for end‑to‑end validation
 - Submission:
+  - Ensure PR description is complete (use compact template), includes demo/validation steps, and links to Charter AC(s)
   - `gt submit --no-interactive` (drafts) and add labels via `gh pr edit <num> --add-label include-in-preview --add-label increment:pi-<n>`
 - Restacking:
   - `gt restack` when `main` moves; fix conflicts at the lowest PR possible
