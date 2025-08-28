@@ -1,4 +1,9 @@
-import type {GraphEdge, GraphLayer, GraphNode, GraphParameterValue} from './types';
+import type {
+	GraphEdge,
+	GraphLayer,
+	GraphNode,
+	GraphParameterValue,
+} from './types';
 
 export function createEmptyGraph(): GraphLayer {
 	return {nodes: [], edges: []};

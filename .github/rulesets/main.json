@@ -1,0 +1,39 @@
+{
+	"name": "Main - Protected Trunk",
+	"target": "branch",
+	"enforcement": "active",
+	"conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"]}},
+	"rules": [
+		{
+			"type": "pull_request",
+			"parameters": {
+				"required_approving_review_count": 1,
+				"require_code_owner_review": true,
+				"dismiss_stale_reviews_on_push": true,
+				"require_last_push_approval": true
+			}
+		},
+		{
+			"type": "required_status_checks",
+			"parameters": {
+				"do_not_enforce_on_create": false,
+				"required_status_checks": [
+					{"context": "typecheck", "integration_id": null},
+					{"context": "lint", "integration_id": null},
+					{"context": "test:golden", "integration_id": null},
+					{"context": "test:schema", "integration_id": null},
+					{"context": "build", "integration_id": null}
+				]
+			}
+		},
+		{"type": "signed_commits"},
+		{
+			"type": "restrict_merges",
+			"parameters": {"allowed_merge_methods": ["squash"]}
+		},
+		{"type": "required_conversation_resolution"},
+		{"type": "require_linear_history"},
+		{"type": "block_force_pushes"},
+		{"type": "restrict_deletions"}
+	]
+}

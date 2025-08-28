@@ -57,3 +57,23 @@ A human-readable, increment-level project log. Updated at the close of each incr
 - Predominant agent model used: gpt-5
 - Additional decisions at close:
   - Adapter registry merge-order fix: ensure base/custom node definitions override generated drei entries to preserve granular parameters (e.g., box)
+
+## Entry: PI-3 (2025-08-18)
+
+- Summary: Paused Code Node scope and closed with UX and scaffolding wins: implemented click→click connection flow with ghost wire and Esc-cancel, introduced a standalone Code View panel scaffold, and added primitive function param parser utilities with tests. Deferred full Code Node, sandboxed execution, and codegen integration to next increment.
+- Artifacts:
+  - Increment Charter: `docs/increments/pi-3/charter.md`
+  - Increment Log: `docs/increments/pi-3/log.md`
+- Major efforts and status:
+  - Connection UX – Click→Click with chooser and ghost wire: done
+  - Code View panel scaffolding adjacent to properties: done
+  - Parser utilities for function params (primitives) with tests: done
+  - Safe runtime preview, Code Node domain/schema, Codegen integration: deferred
+- Tests (at close): Unit suite green (62/62). Playwright e2e specs authored; run under PW runner.
+- Decisions:
+  - Treat `docs/architecture/ARCHITECTURE.md` as canonical architecture/product source over PRD
+  - Keep Code View separate from properties for clarity; full editor QoL in later increment
+- Learnings:
+  - Centralized connection state (Zustand) simplifies click→click UX
+  - Lightweight parsing unblocks UI work without TS compiler dependency
+  - Clear SoT reduces doc drift

@@ -188,3 +188,14 @@ Resolved Motion + React Flow `Handle` typing conflict by wrapping `Handle` insid
 - Issues/Risks: None
 - Learnings: `motion.create` can misalign event typings with third-party components; wrapper is safer
 - Tests/Artifacts: Lint clean; unit tests passing (62/62)
+
+## Entry 18
+
+Closed PI-3 with scope pruned to shipped items; updated rule/docs to use ARCHITECTURE.md as SoT; prepared PI-4.
+
+- Action: Pruned PI-3 charter to UX + scaffolding deliverables and marked Done; added PI-3 entry to project log; created PI-4 charter/log; updated Cursor rule and process doc to reference `docs/architecture/ARCHITECTURE.md`
+- Files/Areas: `docs/increments/pi-3/charter.md`, `docs/increments/pi-3/log.md`, `docs/project-log.md`, `.cursor/rules/increments.mdc`, `docs/process/increment-method.md`, `docs/increments/pi-4/*`
+- Decisions: Treat ARCHITECTURE.md as canonical over PRD; defer full Code Node and sandbox/codegen to PI-4
+- Issues/Risks: E2E specs require Playwright runner wiring in CI
+- Learnings: Tight scoping enabled clean increment closure without regressions
+- Tests/Artifacts: Unit suite remains green (62/62); build passes

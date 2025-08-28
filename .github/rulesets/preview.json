@@ -1,0 +1,19 @@
+{
+	"name": "Preview - Integration Branches",
+	"target": "branch",
+	"enforcement": "active",
+	"conditions": {"ref_name": {"include": ["refs/heads/preview/*"]}},
+	"rules": [
+		{"type": "restrict_updates"},
+		{"type": "block_force_pushes"},
+		{
+			"type": "required_status_checks",
+			"parameters": {
+				"do_not_enforce_on_create": true,
+				"required_status_checks": [
+					{"context": "preview-deploy", "integration_id": null}
+				]
+			}
+		}
+	]
+}

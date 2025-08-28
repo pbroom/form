@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Increment Method (Lean TDD for Humans + LLMs) — Cursor Rule
 
 **Purpose:** Guarantee that after _any_ meaningful change (code/docs/tests), the **Increment Charter (IC)** and **Increment Log (IL)** are updated _in the repo_, even if the agent loses conversation memory (new tab, model switch, cleared context). Also ensure the **Project Log (PL)** is updated at increment close to capture top-level outcomes.
@@ -78,6 +77,10 @@ Each entry:
   - **Tests/Artifacts:** names/links; test result summary (e.g., “18 passed, 2 failed”)
 
 If information is unknown, write a short placeholder and fill it on the next turn.
+
+## Source of Truth
+
+- Architecture reference: `docs/architecture/ARCHITECTURE.md` is the canonical source for product/architecture. Prefer it over `docs/architecture/prd.md` when resolving intent or details. Keep PRD as supplemental context only.
 
 ## Project Log (PL)
 

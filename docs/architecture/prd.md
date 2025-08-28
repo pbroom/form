@@ -64,7 +64,7 @@ Top Use Cases:
 
 ### 6.3 Code Generation & Round-Trip
 
-- React/R3F emitter (primary): imports → constants → <Canvas> → JSX tree
+- React/R3F emitter (primary): imports → constants → `<Canvas>` → JSX tree
 - Optional three.js imperative emitter
 - Fenced, generated regions for safe round-tripping; canonical file shape
 

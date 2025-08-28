@@ -1,0 +1,144 @@
+name: Build Preview Integration Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: 'Increment ID (e.g., pi-3)'
+        required: true
+        type: string
+      include_label:
+        description: 'PR label to include in preview'
+        required: false
+        default: 'include-in-preview'
+        type: string
+      increment_label:
+        description: 'Optional label filter (e.g., increment:pi-3). Leave blank to include all.'
+        required: false
+        type: string
+  schedule:
+    - cron: '0 14 * * 1-5' # Weekdays 10am ET
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  build-preview-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: List candidate PRs
+        id: list_prs
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const incrementLabel = core.getInput('increment_label');
+            const includeLabel = core.getInput('include_label');
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              base: 'main',
+              per_page: 100
+            });
+            const filtered = prs.filter(pr => {
+              const labels = pr.labels.map(l => l.name);
+              const hasInclude = labels.includes(includeLabel);
+              const hasIncrement = incrementLabel ? labels.includes(incrementLabel) : true;
+              return hasInclude && hasIncrement;
+            }).map(pr => ({
+              number: pr.number,
+              headRef: pr.head.ref,
+              headLabel: pr.head.label,
+              headRepoOwner: pr.head.repo.owner.login,
+              headRepoName: pr.head.repo.name
+            }));
+            core.info(`Selected PRs: ${filtered.map(p => p.number).join(', ') || '(none)'}`);
+            return JSON.stringify(filtered);
+
+      - name: Create/reset preview branch
+        run: |
+          set -e
+          INC="${{ inputs.increment }}"
+          PREVIEW_BRANCH="preview/${INC}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin "${PREVIEW_BRANCH}" > /dev/null 2>&1; then
+            git checkout "${PREVIEW_BRANCH}"
+            git reset --hard origin/main
+          else
+            git checkout -b "${PREVIEW_BRANCH}" origin/main
+          fi
+          echo "PREVIEW_BRANCH=${PREVIEW_BRANCH}" >> $GITHUB_ENV
+
+      - name: Merge selected PR heads
+        id: merge_prs
+        env:
+          PRS_JSON: ${{ steps.list_prs.outputs.result || '[]' }}
+        run: |
+          set -e
+          echo "${PRS_JSON}" > /tmp/prs.json
+          python3 - << 'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          prs_path = Path('/tmp/prs.json')
+          conflicts_path = Path('/tmp/conflicts.json')
+          with prs_path.open() as f:
+              prs = json.load(f)
+          conflicts = []
+          for pr in prs:
+              number = pr['number']; owner = pr['headRepoOwner']; repo = pr['headRepoName']; ref = pr['headRef']
+              local_ref = f"pr-{number}"
+              fetch_ref = f"https://github.com/{owner}/{repo}.git"
+              print(f"::group::Fetching PR #{number} from {fetch_ref} ref {ref}")
+              subprocess.run(["git", "fetch", fetch_ref, f"{ref}:{local_ref}"], check=True)
+              print("::endgroup::")
+              print(f"::group::Merging PR #{number}")
+              r = subprocess.run(["git", "merge", "--no-ff", "--no-edit", local_ref])
+              if r.returncode != 0:
+                  subprocess.run(["git", "merge", "--abort"])
+                  conflicts.append(number)
+                  print(f"::warning::Merge conflict in PR #{number}; skipping")
+              print("::endgroup::")
+          with conflicts_path.open('w') as f:
+              json.dump(conflicts, f)
+          print("Conflicts:", conflicts)
+          PY
+          echo "conflicts=$(cat /tmp/conflicts.json)" >> $GITHUB_OUTPUT
+
+      - name: Push preview branch
+        env:
+          PREVIEW_PAT: ${{ secrets.PREVIEW_PAT }}
+        run: |
+          git remote set-url origin https://x-access-token:${PREVIEW_PAT}@github.com/${{ github.repository }}.git
+          git push origin "${PREVIEW_BRANCH}" --force
+
+      - name: Comment on conflicted PRs
+        if: steps.merge_prs.outputs.conflicts != '[]' && steps.merge_prs.outputs.conflicts != ''
+        uses: actions/github-script@v7
+        env:
+          CONFLICTS: ${{ steps.merge_prs.outputs.conflicts }}
+          INC: ${{ inputs.increment }}
+        with:
+          script: |
+            const conflicts = JSON.parse(process.env.CONFLICTS || '[]');
+            const inc = process.env.INC;
+            for (const num of conflicts) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: num,
+                body: `Heads up: PR #${num} could not be auto-merged into \`preview/${inc}\` due to conflicts. Please rebase on \`main\` and resolve conflicts, then re-add the label to include in preview.`
+              });
+            }
+
+      - name: Output branch
+        run: echo "Preview branch is $PREVIEW_BRANCH"

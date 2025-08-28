@@ -16,13 +16,18 @@
 ## Efforts
 
 - Effort: [Name]
+
   - Tasks:
     - [ ] Task 1
     - [ ] Task 2
   - ACs:
+
     - [ ]
-  - ## Tests (TDD):
-  - ## Steps:
+
+  - ## Tests (TDD)
+
+  - ## Steps
+
   - Estimate: S/M/L
   - Status: Not started / In progress / Blocked / Done
 

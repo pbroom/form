@@ -20,15 +20,6 @@ export default tseslint.config([
       globals: globals.browser,
     },
   },
-  {
-    files: ["**/*.css"],
-    languageOptions: {
-      parser: null,
-    },
-    rules: {
-      // Disable all rules for CSS files since they're processed by Tailwind
-      "no-unused-vars": "off",
-      "no-undef": "off",
-    },
-  },
+  // Ignore CSS files entirely; handled by Tailwind/Vite
+  { ignores: ["**/*.css"] },
 ]);
