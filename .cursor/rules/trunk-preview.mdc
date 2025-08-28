@@ -42,6 +42,8 @@
 - Required checks on `main`: `typecheck`, `lint`, `test:golden`, `test:schema`, `build`.
 - Preview deploy is triggered by pushes to `preview/**`.
 
+---
+
 description: Trunk + Preview integration rules for branches, PRs, preview, and release tags
 globs: [".github/workflows/**", ".github/**", "docs/**/*", "**/*.md", "**/*.mdc"]
 alwaysApply: false
