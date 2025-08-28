@@ -150,14 +150,14 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
 
 ## 8. Roadmap Phases (high-level)
 
-- **Increment 1 – MVP Core**
+- **Phase 1 – MVP Core**
 
   - TS code nodes (linked, inline)
   - Properties from schema
   - Command log + undo/redo
   - Convex sync + projects
 
-- **Increment 2 – Planes & Libraries**
+- **Phase 2 – Planes & Libraries**
 
   - Grouping → subgraph templates
   - PIC autogen
@@ -165,20 +165,20 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
   - Basic realtime collab + presence
   - Snapshots
 
-- **Increment 3 – Displays & Search**
+- **Phase 3 – Displays & Search**
 
   - Display nodes (image/scalar)
   - GLSL node runtime
   - Library search & filters
   - Roles/sharing
 
-- **Increment 4 – Attachments & Upgrades**
+- **Phase 4 – Attachments & Upgrades**
 
   - Attachment modes (forked, baked, inline)
   - Upgrade/remap wizard
   - Overrides
 
-- **Increment 5 – Publishing & Telemetry**
+- **Phase 5 – Publishing & Telemetry**
   - Public libraries + publishing
   - Advanced telemetry (perf, audit)
   - MCP agent tools
