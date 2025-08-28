@@ -22,6 +22,7 @@
   - `gt restack` when `main` moves; fix conflicts at the lowest PR possible
 - Charter/Log:
   - Update `docs/increments/pi-<n>/charter.md` status and append IL entries in each PR
+  - Use the compact PR template (small PRs) to keep descriptions focused; the top PR provides the cumulative diff
 
 ## Preview
 
