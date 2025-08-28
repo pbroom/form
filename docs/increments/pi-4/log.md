@@ -76,3 +76,25 @@ CI lint softening and pnpm preference rule.
 - Issues/Risks: Lint errors still present; follow-up to fix or tune rules
 - Learnings: Minimal CI friction helps land infra changes faster
 - Tests/Artifacts: CI re-run pending
+
+## Entry 8
+
+Realigned PI-4 Charter to Phase 1 (MVP Core) per ARCHITECTURE.md; created branch for work.
+
+- Action: Updated `docs/increments/pi-4/charter.md` to Phase 1 scope; created branch `feat/pi-4-charter-phase-1`
+- Files/Areas: `docs/increments/pi-4/charter.md`
+- Decisions: Focus PI-4 on MVP Core: nodes, properties, command log, Convex projects, deterministic codegen
+- Issues/Risks: Scope creep into Code Node runtime preview avoided; reserved for later phase
+- Learnings: Aligning with ARCHITECTURE phases clarifies acceptance criteria
+- Tests/Artifacts: Charter updated; follow-up to add tests per efforts
+
+## Entry 9
+
+Graphite setup for stacked PRs; submission blocked pending PAT.
+
+- Action: Installed/initialized Graphite; tracked current branch; created first stack commit; attempted submit
+- Files/Areas: local tools; `docs/increments/pi-4/charter.md` status set to In progress (Node Graph Essentials)
+- Decisions: Use Graphite to manage tiny PRs with cumulative top PR; fall back to `gh` if needed
+- Issues/Risks: Graphite lacks GitHub permissions; needs PAT to submit PRs
+- Learnings: Cumulative diffs via stacked PRs streamline Phase 1 integration review
+- Tests/Artifacts: N/A
