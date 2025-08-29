@@ -27,29 +27,14 @@
 	background-color: unset;
 	border-width: 0;
 }
-
-/* Offset edge connections to handle center */
-.react-flow__handle-left::before,
-.react-flow__handle-right::before {
-	content: '';
-	position: absolute;
-	width: 8px;
-	height: 8px;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	pointer-events: none;
-}
-
-/* Fine-tune connection points */
 .react-flow__handle-left {
-	/* Shift visual connection point right to center */
-	margin-left: 8px;
+	top: 0 !important;
+	transform: translate(0, 0) !important;
 }
 
 .react-flow__handle-right {
-	/* Shift visual connection point left to center */
-	margin-right: 8px;
+	top: 0 !important;
+	transform: translate(0, 0) !important;
 }
 
 /* Code Editor */

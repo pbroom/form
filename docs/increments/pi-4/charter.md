@@ -23,7 +23,7 @@
 
   - Tasks:
     - [ ] Create/select node; connect edges with `targetHandle`
-    - [ ] Ensure hidden inputs unless connected; generic input optional
+    - [x] Scaffold custom Node/Handle/Edge primitives with `ConnectionTarget`
   - ACs:
     - [ ] Core graph interactions stable and accessible
   - Tests (TDD): Playwright specs for selection/connect; unit tests for IR ops
@@ -58,14 +58,14 @@
 - Effort: Convex Sync + Projects
 
   - Tasks:
-    - [ ] Mutations for create/save/load project
-    - [ ] Deterministic JSON serialization
+    - [x] Mutations for create/save/load project
+    - [x] Deterministic JSON serialization
   - ACs:
     - [ ] Save→Load round-trip preserves IR and module state
   - Tests (TDD): save/load unit; minimal e2e
   - Steps: schema → mutations/queries → client wiring
   - Estimate: S
-  - Status: Not started
+  - Status: In progress
 
 - Effort: Deterministic Codegen (TSX)
 

@@ -6,7 +6,7 @@ import {
 import Viewport from '@/components/Viewport';
 import PropertiesPanel from '@/components/PropertiesPanel';
 import CodeViewPanel from '@/components/CodeViewPanel';
-import NodeGraphEditorV2 from '@/components/NodeGraphEditorV2';
+import NodeGraphEditorV2 from '@/components/NodeGraphEditor';
 import type {ViewGraphState} from '@/components/Viewport';
 import {useMemo} from 'react';
 

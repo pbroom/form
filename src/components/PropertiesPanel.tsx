@@ -8,6 +8,7 @@ import type {NodeData} from './Node';
 import DraggableNumberInput from '@/components/ui/draggable-number-input';
 
 import type {ValidationError} from '@/lib/node-registry';
+import {useDebouncedCallback} from '@/lib/hooks/useDebouncedCallback';
 
 type PropertiesPanelProps = {
 	node: Node<NodeData> | null;
@@ -85,6 +86,12 @@ export default function PropertiesPanel({
 	onLabelChange,
 	validationErrors = [],
 }: PropertiesPanelProps) {
+	const debouncedParamChange = useDebouncedCallback(
+		(nodeId: string, key: string, value: unknown) =>
+			onParamChange(nodeId, key, value),
+		100
+	);
+
 	if (!node) {
 		return (
 			<div className={cn('h-full w-full p-3 text-sm text-muted-foreground')}>
@@ -134,7 +141,7 @@ export default function PropertiesPanel({
 									<ParameterControl
 										def={p}
 										value={node.data?.params?.[p.key]}
-										onChange={(v) => onParamChange(node.id, p.key, v)}
+										onChange={(v) => debouncedParamChange(node.id, p.key, v)}
 										validationError={paramError}
 									/>
 									{paramError && (

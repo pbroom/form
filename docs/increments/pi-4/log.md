@@ -120,3 +120,25 @@ Started "Properties from Schema" effort.
 - Issues/Risks: Lint rules and E2E configuration still pending; non-blocking
 - Learnings: Charter-driven status makes PR scoping clearer
 - Tests/Artifacts: Upcoming unit/UI tests for schema mapping
+
+## Entry 12
+
+Established custom node UI primitives and integrated them into the editor.
+
+- Action: Added `src/components/node-ui/primitives.tsx`, updated `Node.tsx` to compose `NodeHeader`, `NodeBody`, and `ConnectionTarget`; enhanced `Handle` to accept children
+- Files/Areas: `src/components/node-ui/primitives.tsx`, `src/components/Handle.tsx`, `src/components/Node.tsx`
+- Decisions: Use a `ConnectionTarget` element inside handles as the visual/positional anchor; keep styling via Tailwind classes; defer CSS extraction for tiny inline size style
+- Issues/Risks: Minor lint warning about inline style in `ConnectionTarget` (non-blocking)
+- Learnings: Composable primitives simplify future expansion (multi-outputs/inputs)
+- Tests/Artifacts: Unit suite: 64 passed, 0 failed (`vitest run tests/unit/`)
+
+## Entry 13
+
+Set up Convex backend scaffolding and wired client/provider.
+
+- Action: Added Convex schema and project functions; added client helper and provider integration; added wrappers for create/save/load
+- Files/Areas: `convex/schema.ts`, `convex/projects.ts`, `src/lib/project/{convexClient.ts,convexProjectsClient.ts}`, `src/main.tsx`, `package.json`
+- Decisions: Use string-based RPC identifiers to avoid requiring codegen; store projects as deterministic JSON strings
+- Issues/Risks: Requires `VITE_CONVEX_URL`; API types optional until codegen wired
+- Learnings: Keeping the provider optional allows local dev without Convex
+- Tests/Artifacts: Unit run: 18 passed, 9 failed (Playwright suites); unit suites green
