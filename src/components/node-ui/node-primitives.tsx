@@ -20,7 +20,10 @@ export function Node(props: WithChildren<{selected?: boolean}>) {
 	const {children, className} = props;
 	return (
 		<div
-			className={cn('px-3 py-2 text-left min-w-[180px]', baseBox, className)}
+			className={cn(
+				'text-left min-w-[180px] data-[selected=true]:bg-primary/10',
+				className
+			)}
 		>
 			{children}
 		</div>

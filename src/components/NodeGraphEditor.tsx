@@ -17,6 +17,8 @@ import {
 	NodeEdge,
 	NodeConnectionLine,
 } from '@/components/node-ui/node-primitives';
+import {useDevtoolsStore} from '@/store/devtools';
+import {DevTools} from '@/components/devtools';
 
 export type ReactFlowCommonProps = Pick<
 	ReactFlowProps,
@@ -69,7 +71,11 @@ const edgeTypes = {
 
 const initialEdges: Edge[] = [];
 
-export default function NodeGraphEditorV2() {
+export default function NodeGraphEditor({
+	onSelectNode,
+}: {
+	onSelectNode?: (node: Node<NodeData> | null) => void;
+}) {
 	const [nodes, setNodes, onNodesChange] =
 		useNodesState<Node<NodeData>>(initialNodes);
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -103,6 +109,8 @@ export default function NodeGraphEditorV2() {
 		setNodes((nds) => nds.concat(newNode));
 	};
 
+	const devtoolsEnabled = useDevtoolsStore((s) => s.enabled);
+
 	return (
 		<div className='w-full h-full relative'>
 			<div className='absolute z-10 m-2 flex gap-2'>
@@ -127,6 +135,9 @@ export default function NodeGraphEditorV2() {
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
 				onConnect={onConnect}
+				onSelectionChange={({nodes}) => {
+					onSelectNode?.(nodes.length ? (nodes[0] as Node<NodeData>) : null);
+				}}
 				connectionLineComponent={NodeConnectionLine}
 				fitView
 				fitViewOptions={{
@@ -144,7 +155,9 @@ export default function NodeGraphEditorV2() {
 				selectNodesOnDrag={true}
 				className='bg-background text-foreground'
 				style={{width: '100%', height: '100%'}}
-			/>
+			>
+				{devtoolsEnabled ? <DevTools position='top-right' /> : null}
+			</ReactFlow>
 		</div>
 	);
 }

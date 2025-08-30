@@ -2,6 +2,7 @@ import {Position, NodeProps, useStore} from '@xyflow/react';
 import {cn} from '@/lib/utils';
 // Using unified NodeHandle from node-primitives
 import {getNodeDefinition} from '@/lib/node-registry';
+import {useCodeStore} from '@/store/code';
 // import {motion} from 'motion/react';
 import {
 	Node as NodeRoot,
@@ -29,6 +30,7 @@ export type NodeData = {
 function CustomNode({id, data, selected}: NodeProps) {
 	const d = data as NodeData;
 	const def = getNodeDefinition(d.typeKey);
+	const setDynamicFromCode = useCodeStore((s) => s.getDynamicParams);
 
 	// Determine which parameter handles are currently connected to this node
 	const connectedParamKeys = useStore((s) =>
@@ -39,8 +41,8 @@ function CustomNode({id, data, selected}: NodeProps) {
 
 	// Effective parameter list: registry for normal nodes; dynamic for code nodes
 	const effectiveParams =
-		d.typeKey === 'code' && d.dynamicParams?.length
-			? d.dynamicParams.map((p) => ({
+		d.typeKey === 'code'
+			? setDynamicFromCode(String(id)).map((p) => ({
 					key: p.key,
 					label: p.label || p.key,
 					acceptsConnections: true as const,
