@@ -6,8 +6,16 @@ import {
 } from '@/lib/node-registry';
 import type {NodeData} from './Node';
 import DraggableNumberInput from '@/components/ui/draggable-number-input';
-
 import type {ValidationError} from '@/lib/node-registry';
+import {useDebouncedCallback} from '@/lib/hooks/useDebouncedCallback';
+import CodeMirror from '@uiw/react-codemirror';
+import {javascript} from '@codemirror/lang-javascript';
+import {useCodeStore} from '@/store/code';
+import {
+	Collapsible,
+	CollapsibleTrigger,
+	CollapsibleContent,
+} from '@/components/ui/collapsible';
 
 type PropertiesPanelProps = {
 	node: Node<NodeData> | null;
@@ -85,6 +93,15 @@ export default function PropertiesPanel({
 	onLabelChange,
 	validationErrors = [],
 }: PropertiesPanelProps) {
+	const debouncedParamChange = useDebouncedCallback(
+		(nodeId: string, key: string, value: unknown) =>
+			onParamChange(nodeId, key, value),
+		100
+	);
+	// Unconditional hooks
+	const getCode = useCodeStore((s) => s.getCode);
+	const setCode = useCodeStore((s) => s.setCode);
+
 	if (!node) {
 		return (
 			<div className={cn('h-full w-full p-3 text-sm text-muted-foreground')}>
@@ -94,6 +111,7 @@ export default function PropertiesPanel({
 	}
 
 	const def = getNodeDefinition(node.data.typeKey);
+	const isCodeNode = node.data.typeKey === 'code';
 
 	return (
 		<div className={cn('h-full w-full p-3 space-y-3 bg-card/40')}>
@@ -106,6 +124,26 @@ export default function PropertiesPanel({
 				</div>
 				<div className='text-[10px] text-muted-foreground'>id: {node.id}</div>
 			</div>
+
+			{isCodeNode ? (
+				<div className='space-y-1 rounded-md border border-border/60 bg-background/40'>
+					<Collapsible defaultOpen>
+						<CollapsibleTrigger className='w-full text-left cursor-pointer text-xs font-medium px-2 py-1'>
+							Code
+						</CollapsibleTrigger>
+						<CollapsibleContent className='p-2 mt-1'>
+							<CodeMirror
+								data-testid='code-editor-textarea'
+								value={getCode(node.id)}
+								extensions={[javascript({typescript: true})]}
+								height='180px'
+								theme={'dark'}
+								onChange={(val) => setCode(node.id, val)}
+							/>
+						</CollapsibleContent>
+					</Collapsible>
+				</div>
+			) : null}
 
 			<div className='space-y-1'>
 				<label className='flex items-center justify-between gap-2 text-xs'>
@@ -134,7 +172,7 @@ export default function PropertiesPanel({
 									<ParameterControl
 										def={p}
 										value={node.data?.params?.[p.key]}
-										onChange={(v) => onParamChange(node.id, p.key, v)}
+										onChange={(v) => debouncedParamChange(node.id, p.key, v)}
 										validationError={paramError}
 									/>
 									{paramError && (

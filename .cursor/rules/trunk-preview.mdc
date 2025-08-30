@@ -3,17 +3,33 @@
 ## Branches
 
 - Always work off `main`. Name branches `feat/pi-<n>-<slug>`, `fix/pi-<n>-<slug>`, `chore/pi-<n>-<slug>`, `spike/pi-<n>-<slug>`.
-- Keep PRs small (≤ ~400 LOC).
+- Prefer cohesive, testable vertical slices over micro-PRs. Typical size guideline: 100–800 LOC when the change is self‑contained and demoable.
 
 ## PRs
 
 - Target `main`. Use the PR template; link Charter & Log.
 - Apply labels on PRs: `include-in-preview` and optionally `increment:pi-<n>`.
 
+### Stacked PRs with Graphite
+
+- Use Graphite (gt) for stacked PRs:
+  - `gt create -m "feat(pi-<n>): <scope>"` to create focused, testable PRs
+  - Avoid PRs that only update logs/docs without delivering runnable value; batch such changes into nearby functional PRs
+  - Keep PRs draft until green; merge bottom-up frequently
+  - Top PR shows the cumulative diff for integration review; use preview workflow or an integration branch for end‑to‑end validation
+- Submission:
+  - Ensure PR description is complete (use compact template), includes demo/validation steps, and links to Charter AC(s)
+  - `gt submit --no-interactive` (drafts) and add labels via `gh pr edit <num> --add-label include-in-preview --add-label increment:pi-<n>`
+- Restacking:
+  - `gt restack` when `main` moves; fix conflicts at the lowest PR possible
+- Charter/Log:
+  - Update `docs/increments/pi-<n>/charter.md` status and append IL entries in each PR
+  - Use the compact PR template (small PRs) to keep descriptions focused; the top PR provides the cumulative diff
+
 ## Preview
 
 - Do not push directly to `preview/*`. Only automation updates preview branches.
-- To compose the preview branch, run the GitHub workflow:
+- To compose the preview branch across many small PRs, run the GitHub workflow:
   - Terminal: `gh workflow run "Build Preview Integration Branch" -f increment=pi-3 -f include_label=include-in-preview`
   - Or use the Actions UI and set `increment=pi-3`.
 
@@ -25,6 +41,8 @@
 
 - Required checks on `main`: `typecheck`, `lint`, `test:golden`, `test:schema`, `build`.
 - Preview deploy is triggered by pushes to `preview/**`.
+
+---
 
 description: Trunk + Preview integration rules for branches, PRs, preview, and release tags
 globs: [".github/workflows/**", ".github/**", "docs/**/*", "**/*.md", "**/*.mdc"]

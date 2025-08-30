@@ -76,3 +76,69 @@ CI lint softening and pnpm preference rule.
 - Issues/Risks: Lint errors still present; follow-up to fix or tune rules
 - Learnings: Minimal CI friction helps land infra changes faster
 - Tests/Artifacts: CI re-run pending
+
+## Entry 8
+
+Realigned PI-4 Charter to Phase 1 (MVP Core) per ARCHITECTURE.md; created branch for work.
+
+- Action: Updated `docs/increments/pi-4/charter.md` to Phase 1 scope; created branch `feat/pi-4-charter-phase-1`
+- Files/Areas: `docs/increments/pi-4/charter.md`
+- Decisions: Focus PI-4 on MVP Core: nodes, properties, command log, Convex projects, deterministic codegen
+- Issues/Risks: Scope creep into Code Node runtime preview avoided; reserved for later phase
+- Learnings: Aligning with ARCHITECTURE phases clarifies acceptance criteria
+- Tests/Artifacts: Charter updated; follow-up to add tests per efforts
+
+## Entry 9
+
+Graphite setup for stacked PRs; submission blocked pending PAT.
+
+- Action: Installed/initialized Graphite; tracked current branch; created first stack commit; attempted submit
+- Files/Areas: local tools; `docs/increments/pi-4/charter.md` status set to In progress (Node Graph Essentials)
+- Decisions: Use Graphite to manage tiny PRs with cumulative top PR; fall back to `gh` if needed
+- Issues/Risks: Graphite lacks GitHub permissions; needs PAT to submit PRs
+- Learnings: Cumulative diffs via stacked PRs streamline Phase 1 integration review
+- Tests/Artifacts: N/A
+
+## Entry 10
+
+PR template streamlined for small PRs; trunk-preview rule notes added.
+
+- Action: Updated `.github/pull_request_template.md` to compact small-PR format; updated trunk-preview rule to reference compact template
+- Files/Areas: `.github/pull_request_template.md`, `.cursor/rules/trunk-preview.mdc`
+- Decisions: Keep each PR description narrowly scoped; rely on top PR for cumulative view
+- Issues/Risks: None
+- Learnings: Focused templates reduce friction when stacking many PRs
+- Tests/Artifacts: N/A
+
+## Entry 11
+
+Started "Properties from Schema" effort.
+
+- Action: Set effort status to In progress in Charter; preparing scaffold PR
+- Files/Areas: `docs/increments/pi-4/charter.md`
+- Decisions: Begin with schema→UI mapping for core types; debounce updates to preview
+- Issues/Risks: Lint rules and E2E configuration still pending; non-blocking
+- Learnings: Charter-driven status makes PR scoping clearer
+- Tests/Artifacts: Upcoming unit/UI tests for schema mapping
+
+## Entry 12
+
+Established custom node UI primitives and integrated them into the editor.
+
+- Action: Added `src/components/node-ui/primitives.tsx`, updated `Node.tsx` to compose `NodeHeader`, `NodeBody`, and `ConnectionTarget`; enhanced `Handle` to accept children
+- Files/Areas: `src/components/node-ui/primitives.tsx`, `src/components/Handle.tsx`, `src/components/Node.tsx`
+- Decisions: Use a `ConnectionTarget` element inside handles as the visual/positional anchor; keep styling via Tailwind classes; defer CSS extraction for tiny inline size style
+- Issues/Risks: Minor lint warning about inline style in `ConnectionTarget` (non-blocking)
+- Learnings: Composable primitives simplify future expansion (multi-outputs/inputs)
+- Tests/Artifacts: Unit suite: 64 passed, 0 failed (`vitest run tests/unit/`)
+
+## Entry 13
+
+Set up Convex backend scaffolding and wired client/provider.
+
+- Action: Added Convex schema and project functions; added client helper and provider integration; added wrappers for create/save/load
+- Files/Areas: `convex/schema.ts`, `convex/projects.ts`, `src/lib/project/{convexClient.ts,convexProjectsClient.ts}`, `src/main.tsx`, `package.json`
+- Decisions: Use string-based RPC identifiers to avoid requiring codegen; store projects as deterministic JSON strings
+- Issues/Risks: Requires `VITE_CONVEX_URL`; API types optional until codegen wired
+- Learnings: Keeping the provider optional allows local dev without Convex
+- Tests/Artifacts: Unit run: 18 passed, 9 failed (Playwright suites); unit suites green

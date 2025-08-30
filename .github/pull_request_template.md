@@ -1,34 +1,31 @@
-# Increment
+<!-- markdownlint-disable MD041 -->
 
-- ID: **pi-4** (Current)
-- Charter: /docs/increments/pi-4/charter.md
-- Effort: `<effort-name>` (link to Charter section)
+## PR Summary (Small, Focused)
 
-## What & Why
+- **Increment**: pi-4 | **Effort**: `<effort-name>` (link Charter section)
+- **What**: 1–2 sentence summary of the change
+- **Why**: brief rationale tying to Charter AC(s)
 
-- Brief (1–2 sentences):
+### Acceptance Criteria covered
 
-### Acceptance Criteria (from Charter)
+- [ ] AC-1 (from Charter): `<short>`
+- [ ] AC-2 (optional): `<short>`
 
-- [ ] AC-1:
-- [ ] AC-2:
+### Tests & Validation
 
-### Tests (TDD)
+- [ ] unit: `<files/specs>`
+- [ ] snapshot/golden (if applicable)
+- [ ] e2e (if applicable)
+- [ ] Manual demo steps: `<how to validate end-to-end>`
 
-- New tests added:
-  - [ ] unit:
-  - [ ] golden:
-  - [ ] PIC snapshot:
-  - [ ] e2e smoke:
+### Docs & Increment Method
 
-### Docs
-
-- [ ] Increment Log updated: /docs/increments/pi-4/log.md
+- [ ] Log updated: `/docs/increments/pi-4/log.md`
 - [ ] Charter Effort status updated
 
 ### Risk & Rollback
 
-- Risk:
-- Rollback: revert commit `<sha>`; feature flagged? yes/no
+- Risk: `<short>`
+- Rollback: revert `<sha>`; feature flagged? yes/no
 
-> Add label **include-in-preview** to include this PR in `preview/pi-4`.
+> Labels: add `include-in-preview` (and `increment:pi-4`).
