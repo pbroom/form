@@ -20,19 +20,18 @@
 ## Efforts
 
 - Effort: Node Graph Essentials
-
   - Tasks:
     - [ ] Create/select node; connect edges with `targetHandle`
     - [x] Scaffold custom Node/Handle/Edge primitives with `ConnectionTarget`
+    - [x] Globalize React Flow base CSS and ensure Tailwind overrides
   - ACs:
-    - [ ] Core graph interactions stable and accessible
+    - [ ] Core graph interactions stable and accessible; Tailwind consistently overrides React Flow defaults per theming guide
   - Tests (TDD): Playwright specs for selection/connect; unit tests for IR ops
   - Steps: event wiring → state updates → a11y hooks
   - Estimate: M
   - Status: In progress
 
 - Effort: Properties from Schema
-
   - Tasks:
     - [ ] Schema-driven field rendering (sliders, color, selects)
     - [ ] Bind props → viewport updates
@@ -44,7 +43,6 @@
   - Status: In progress
 
 - Effort: Command Log + Undo/Redo
-
   - Tasks:
     - [ ] Log create/select/connect/setProp/delete
     - [ ] Deterministic undo/redo
@@ -56,7 +54,6 @@
   - Status: Not started
 
 - Effort: Convex Sync + Projects
-
   - Tasks:
     - [x] Mutations for create/save/load project
     - [x] Deterministic JSON serialization
@@ -68,7 +65,6 @@
   - Status: In progress
 
 - Effort: Deterministic Codegen (TSX)
-
   - Tasks:
     - [ ] Minimal React/R3F emitter with fenced regions
     - [ ] `tsc --noEmit` typecheck on output

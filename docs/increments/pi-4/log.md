@@ -142,3 +142,14 @@ Set up Convex backend scaffolding and wired client/provider.
 - Issues/Risks: Requires `VITE_CONVEX_URL`; API types optional until codegen wired
 - Learnings: Keeping the provider optional allows local dev without Convex
 - Tests/Artifacts: Unit run: 18 passed, 9 failed (Playwright suites); unit suites green
+
+## Entry 14
+
+Ensured Tailwind styles override React Flow defaults by adjusting global CSS import order and deduping imports.
+
+- Action: Imported `@xyflow/react/dist/style.css` globally in `src/main.tsx` before `index.css`; removed local imports in `NodeGraphEditor.tsx` and `NodeGraphEditor(Legacy).tsx`; fixed stale import path in legacy editor
+- Files/Areas: `src/main.tsx`, `src/components/NodeGraphEditor.tsx`, `src/components/NodeGraphEditor(Legacy).tsx`
+- Decisions: Follow React Flow theming guidance to load base styles first, then Tailwind; centralize CSS import to avoid ordering drift
+- Issues/Risks: Vite config error prevents running unit tests locally right now; style changes are low-risk
+- Learnings: Globalizing library CSS avoids future regressions and ensures Tailwind precedence
+- Tests/Artifacts: Manual verification; unit tests deferred due to Vite startup error

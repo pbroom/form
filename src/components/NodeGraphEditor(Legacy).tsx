@@ -11,7 +11,6 @@ import {
 	ConnectionLineType,
 } from '@xyflow/react';
 import type {GraphParameterValue} from '@/lib/ir/types';
-import '@xyflow/react/dist/style.css';
 import CustomNode, {NodeData} from './Node';
 import DraggableMinimap from './DraggableMinimap';
 import Viewport, {type ViewGraphState} from './Viewport';
@@ -21,7 +20,7 @@ import PropertiesPanel from './PropertiesPanel';
 import CodeViewPanel from './CodeViewPanel';
 import CodeExportModal from './CodeExportModal';
 import ParameterConnectionOverlay from './ParameterConnectionOverlay';
-import CustomEdge from './Edge';
+import CustomEdge from './DynamicEdge';
 // import DynamicEdge from './DynamicEdge'; // Uncomment to use dynamic edge
 import {
 	validateConnection,
@@ -95,7 +94,7 @@ const initialNodes: Node<NodeData>[] = [
 		},
 		position: {x: 80, y: 25},
 	},
-];
+].map((n) => ({...n, className: 'group'}));
 
 const initialEdges: Edge[] = [
 	// Connect scene to render so something shows by default
@@ -168,7 +167,7 @@ function NodeGraphEditor() {
 			const handleEl = nodeEl
 				? (nodeEl.querySelector(
 						'[data-testid="handle-source"]'
-				  ) as HTMLElement | null)
+					) as HTMLElement | null)
 				: null;
 			const rect = (
 				handleEl || (event?.target as HTMLElement)
@@ -349,8 +348,8 @@ function NodeGraphEditor() {
 			const startHandle = paramMatch
 				? paramMatch[1]
 				: handleGenericEl
-				? '__new__'
-				: undefined;
+					? '__new__'
+					: undefined;
 			startTarget(nodeId, startHandle ?? null, center, {
 				x: rect.left,
 				y: rect.top,
@@ -568,7 +567,7 @@ function NodeGraphEditor() {
 		};
 		setNodes((nds) =>
 			nds
-				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.map((n) => ({...n, selected: false}) as Node<NodeData>)
 				.concat({...newNode, selected: true} as Node<NodeData>)
 		);
 		// Select the newly created node
@@ -593,7 +592,7 @@ function NodeGraphEditor() {
 		};
 		setNodes((nds) =>
 			nds
-				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.map((n) => ({...n, selected: false}) as Node<NodeData>)
 				.concat({...newNode, selected: true} as Node<NodeData>)
 		);
 		setSelectedNodeId(newId);
@@ -616,7 +615,7 @@ function NodeGraphEditor() {
 		};
 		setNodes((nds) =>
 			nds
-				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.map((n) => ({...n, selected: false}) as Node<NodeData>)
 				.concat({...newNode, selected: true} as Node<NodeData>)
 		);
 		setSelectedNodeId(newId);
@@ -639,7 +638,7 @@ function NodeGraphEditor() {
 		};
 		setNodes((nds) =>
 			nds
-				.map((n) => ({...n, selected: false} as Node<NodeData>))
+				.map((n) => ({...n, selected: false}) as Node<NodeData>)
 				.concat({...newNode, selected: true} as Node<NodeData>)
 		);
 		// Initialize default code template
@@ -699,7 +698,7 @@ function NodeGraphEditor() {
 					? ({
 							...n,
 							data: {...n.data, label},
-					  } as Node<NodeData>)
+						} as Node<NodeData>)
 					: n
 			)
 		);
@@ -936,7 +935,7 @@ function NodeGraphEditor() {
 							}
 						},
 					},
-			  ]
+				]
 			: []),
 	];
 
@@ -958,7 +957,7 @@ function NodeGraphEditor() {
 			}));
 		}
 		const current = selectedNode
-			? codeByNodeId[selectedNode.id] ?? defaultTemplate
+			? (codeByNodeId[selectedNode.id] ?? defaultTemplate)
 			: defaultTemplate;
 		const handle = setTimeout(() => {
 			const res = validateCodeNodeSource(current);
@@ -980,7 +979,7 @@ function NodeGraphEditor() {
 												type: p.type,
 											})),
 										},
-								  } as Node<NodeData>)
+									} as Node<NodeData>)
 								: n
 						)
 					);
@@ -1103,7 +1102,9 @@ function NodeGraphEditor() {
 						>
 							<CodeViewPanel
 								node={selectedNode}
-								value={selectedNode ? codeByNodeId[selectedNode.id] ?? '' : ''}
+								value={
+									selectedNode ? (codeByNodeId[selectedNode.id] ?? '') : ''
+								}
 								onChange={(val) => {
 									if (selectedNode) {
 										setCodeByNodeId((prev) => ({

@@ -9,7 +9,6 @@ import {
 	type NodeTypes,
 	SelectionMode,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
 import CustomNode, {type NodeData} from '@/components/Node';
 import type {ReactFlowProps} from '@xyflow/react';
 import {initialNodes} from '@/components/initial-nodes';
@@ -76,8 +75,9 @@ export default function NodeGraphEditor({
 }: {
 	onSelectNode?: (node: Node<NodeData> | null) => void;
 }) {
-	const [nodes, setNodes, onNodesChange] =
-		useNodesState<Node<NodeData>>(initialNodes);
+	const [nodes, setNodes, onNodesChange] = useNodesState<Node<NodeData>>(
+		initialNodes.map((n) => ({...n, className: 'group'}))
+	);
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
 	const onConnect = (params: Connection) =>

@@ -27,6 +27,19 @@
 	background-color: unset;
 	border-width: 0;
 }
+
+/* Neutralize default node wrapper visuals so Tailwind node styles win */
+.react-flow__node {
+	background: transparent !important;
+	box-shadow: none !important;
+	border: none !important;
+	padding: 0 !important;
+}
+
+/* Expose selected state to inner Tailwind via group selectors */
+.react-flow__node.selected {
+	/* add a data attribute class for group selectors already provided by nodeClassName='group' */
+}
 .react-flow__handle-left {
 	top: 0 !important;
 	transform: translate(0, 0) !important;

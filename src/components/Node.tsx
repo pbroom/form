@@ -16,6 +16,7 @@ import {
 	Text,
 	ConnectionTarget,
 	NodeHandle,
+	NodeBackdrop,
 } from '@/components/node-ui/node-primitives';
 
 export type NodeData = {
@@ -46,7 +47,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 					key: p.key,
 					label: p.label || p.key,
 					acceptsConnections: true as const,
-			  }))
+				}))
 			: def?.parameters || [];
 
 	return (
@@ -120,6 +121,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 					</NodeInputGroup>
 				</NodeBody>
 			) : null}
+			<NodeBackdrop />
 		</NodeRoot>
 	);
 }

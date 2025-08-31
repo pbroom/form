@@ -13,17 +13,16 @@ type WithChildren<T = unknown> = React.PropsWithChildren<T> & {
 	className?: string;
 };
 
-const baseBox =
-	'bg-neutral-500/5! outline outline-1! outline-neutral-500/10! hover:bg-neutral-500/10! hover:outline-neutral-500/20!';
-
 export function Node(props: WithChildren<{selected?: boolean}>) {
 	const {children, className} = props;
 	return (
 		<div
 			className={cn(
-				'text-left min-w-[180px] data-[selected=true]:bg-primary/10',
+				'text-left min-w-[180px]',
+				// RF wrapper gets nodeClassName='group'; use it to reflect selected state
 				className
 			)}
+			data-testid='node-root'
 		>
 			{children}
 		</div>
@@ -32,13 +31,7 @@ export function Node(props: WithChildren<{selected?: boolean}>) {
 
 export function NodeHeader({children, className}: WithChildren) {
 	return (
-		<div
-			className={cn(
-				'flex items-center justify-between gap-2',
-				baseBox,
-				className
-			)}
-		>
+		<div className={cn('flex items-center justify-between', className)}>
 			{children}
 		</div>
 	);
@@ -48,7 +41,7 @@ export function NodeLabel({children, className}: WithChildren) {
 	return (
 		<div
 			className={cn(
-				'text-foreground text-xs font-medium pb-1 flex-1 truncate',
+				'px-2 text-foreground text-[11px] font-medium flex-1 truncate',
 				className
 			)}
 		>
@@ -58,38 +51,31 @@ export function NodeLabel({children, className}: WithChildren) {
 }
 
 export function NodeBody({children, className}: WithChildren) {
-	return (
-		<div className={cn('space-y-1 pt-1', baseBox, className)}>{children}</div>
-	);
+	return <div className={cn('space-y-1', className)}>{children}</div>;
 }
 
 export function NodeBackdrop({className}: {className?: string}) {
 	return (
 		<div
-			className={cn('absolute inset-0 pointer-events-none', baseBox, className)}
+			className={cn(
+				'absolute bg-muted/50 z-[-1] rounded top-0 left-6 right-6 bottom-0 pointer-events-none group-[.selected]:outline-sky-500 group-[.selected]:outline-2 group-hover:group-[&:not(.selected)]:outline-sky-500 group-hover:group-[&:not(.selected)]:outline-2',
+				className
+			)}
 		/>
 	);
 }
 
 export function NodeOutputGroup({children, className}: WithChildren) {
-	return (
-		<div className={cn('flex flex-col gap-1', baseBox, className)}>
-			{children}
-		</div>
-	);
+	return <div className={cn('flex flex-col', className)}>{children}</div>;
 }
 
 export function NodeInputGroup({children, className}: WithChildren) {
-	return (
-		<div className={cn('flex flex-col gap-1', baseBox, className)}>
-			{children}
-		</div>
-	);
+	return <div className={cn('flex flex-col', className)}>{children}</div>;
 }
 
 export function NodeOutput({children, className}: WithChildren) {
 	return (
-		<div className={cn('relative flex items-center gap-2', baseBox, className)}>
+		<div className={cn('relative flex items-center', className)}>
 			{children}
 		</div>
 	);
@@ -97,7 +83,7 @@ export function NodeOutput({children, className}: WithChildren) {
 
 export function NodeInput({children, className}: WithChildren) {
 	return (
-		<div className={cn('relative flex items-center gap-2', baseBox, className)}>
+		<div className={cn('relative flex items-center', className)}>
 			{children}
 		</div>
 	);
@@ -105,7 +91,7 @@ export function NodeInput({children, className}: WithChildren) {
 
 export function HandleLabel({children, className}: WithChildren) {
 	return (
-		<div className={cn('text-[11px] text-muted-foreground', className)}>
+		<div className={cn('text-[11px] px-2 text-muted-foreground', className)}>
 			{children}
 		</div>
 	);
@@ -129,7 +115,7 @@ export const ConnectionTarget = React.forwardRef<
 			data-connection-target='true'
 			data-testid={testId}
 			className={cn(
-				'block size-2 pointer-events-none bg-neutral-500/10 outline outline-neutral-500/20 hover:bg-neutral-500/20 hover:outline-neutral-500/30 group-hover:bg-neutral-500/20 group-hover:outline-neutral-500/30',
+				'block size-1 rounded-full pointer-events-none bg-foreground/50 hover:bg-foreground group-hover/handle:bg-foreground group-hover/handle:scale-130 hover:scale-130 transition-all duration-150',
 				className
 			)}
 			{...rest}
@@ -149,13 +135,12 @@ export function NodeHandle({className, children, ...props}: NodeHandleProps) {
 		<Handle
 			{...props}
 			className={cn(
-				'border-none! size-6! flex items-center justify-center group relative!',
-				baseBox,
+				'border-none size-6! flex items-center justify-center group/handle relative!',
 				className
 			)}
 		>
 			{children ?? (
-				<span className='size-2! bg-neutral-500/50! pointer-events-none' />
+				<span className='size-1 bg-neutral-500/50! pointer-events-none' />
 			)}
 		</Handle>
 	);
