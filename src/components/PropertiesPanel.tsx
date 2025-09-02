@@ -8,8 +8,7 @@ import type {NodeData} from './Node';
 import DraggableNumberInput from '@/components/ui/draggable-number-input';
 import type {ValidationError} from '@/lib/node-registry';
 import {useDebouncedCallback} from '@/lib/hooks/useDebouncedCallback';
-import CodeMirror from '@uiw/react-codemirror';
-import {javascript} from '@codemirror/lang-javascript';
+import CodeView from '@/components/CodeView';
 import {useCodeStore} from '@/store/code';
 import {
 	Collapsible,
@@ -131,14 +130,12 @@ export default function PropertiesPanel({
 						<CollapsibleTrigger className='w-full text-left cursor-pointer text-xs font-medium px-2 py-1'>
 							Code
 						</CollapsibleTrigger>
-						<CollapsibleContent className='p-2 mt-1'>
-							<CodeMirror
-								data-testid='code-editor-textarea'
+						<CollapsibleContent className='p-2 mt-1 text-xs'>
+							<CodeView
+								node={node}
 								value={getCode(node.id)}
-								extensions={[javascript({typescript: true})]}
-								height='180px'
-								theme={'dark'}
 								onChange={(val) => setCode(node.id, val)}
+								validationMessage={undefined}
 							/>
 						</CollapsibleContent>
 					</Collapsible>

@@ -1,4 +1,12 @@
-import {Position, NodeProps, useStore} from '@xyflow/react';
+import {
+	Position,
+	NodeProps,
+	useStore,
+	useInternalNode,
+	useNodeId,
+} from '@xyflow/react';
+import type {InternalNode} from '@xyflow/react';
+import type {ReactNode} from 'react';
 import {cn} from '@/lib/utils';
 // Using unified NodeHandle from node-primitives
 import {getNodeDefinition} from '@/lib/node-registry';
@@ -17,6 +25,7 @@ import {
 	ConnectionTarget,
 	NodeHandle,
 	NodeBackdrop,
+	Hud,
 } from '@/components/node-ui/node-primitives';
 
 export type NodeData = {
@@ -26,6 +35,16 @@ export type NodeData = {
 	onParamChange?: (nodeId: string, key: string, value: unknown) => void;
 	// For code nodes: dynamic parameter sockets derived from code
 	dynamicParams?: {key: string; label: string; type: string}[];
+	// Optional HUD content for this node. If a function is provided, it will
+	// receive live info and should return renderable content.
+	hud?:
+		| ReactNode
+		| ((info: {
+				id: string;
+				position: {x: number; y: number} | undefined;
+				connections: number;
+				selected: boolean;
+		  }) => React.ReactNode);
 };
 
 function CustomNode({id, data, selected}: NodeProps) {
@@ -50,6 +69,26 @@ function CustomNode({id, data, selected}: NodeProps) {
 				}))
 			: def?.parameters || [];
 
+	// Node position and total connections for HUD
+	const nodeId = useNodeId() ?? String(id);
+	const internal = useInternalNode(nodeId) as InternalNode | null;
+	const totalConnections = useStore(
+		(s) =>
+			s.edges.filter((e) => e.source === String(id) || e.target === String(id))
+				.length
+	);
+
+	let hudChildren: React.ReactNode | null = null;
+	if (d.hud) {
+		const info = {
+			id: String(id),
+			position: internal?.position,
+			connections: totalConnections,
+			selected: Boolean(selected),
+		};
+		hudChildren = typeof d.hud === 'function' ? d.hud(info) : d.hud;
+	}
+
 	return (
 		<NodeRoot
 			selected={selected}
@@ -58,6 +97,7 @@ function CustomNode({id, data, selected}: NodeProps) {
 			data-node-id={String(id)}
 			data-selected={selected ? 'true' : 'false'}
 		>
+			{hudChildren ? <Hud>{hudChildren}</Hud> : null}
 			<NodeHeader>
 				<NodeHandle
 					type='target'

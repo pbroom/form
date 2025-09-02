@@ -23,6 +23,7 @@
 	"dependencies": {
 		"@convex-dev/eslint-plugin": "0.0.1-alpha.4",
 		"@dnd-kit/core": "^6.3.1",
+		"@monaco-editor/react": "^4.7.0",
 		"@radix-ui/react-checkbox": "^1.3.2",
 		"@radix-ui/react-collapsible": "^1.1.12",
 		"@radix-ui/react-context-menu": "^2.2.15",
@@ -43,6 +44,7 @@
 		"@react-three/fiber": "^9.3.0",
 		"@tailwindcss/vite": "^4.1.11",
 		"@types/three": "^0.178.1",
+		"@uiw/codemirror-theme-vscode": "^4.25.1",
 		"@xyflow/react": "^12.8.4",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
@@ -51,6 +53,7 @@
 		"convex-helpers": "^0.1.104",
 		"d3": "^7.9.0",
 		"lucide-react": "^0.536.0",
+		"monaco-editor": "^0.52.2",
 		"motion": "^12.23.12",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
@@ -58,7 +61,8 @@
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.11",
 		"three": "^0.179.1",
-		"zod": "^3.23.8"
+		"zod": "^3.23.8",
+		"zustand": "^5.0.8"
 	},
 	"devDependencies": {
 		"@codemirror/lang-javascript": "^6.2.4",

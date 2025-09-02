@@ -17,7 +17,7 @@ import {
 	NodeConnectionLine,
 } from '@/components/node-ui/node-primitives';
 import {useDevtoolsStore} from '@/store/devtools';
-import {DevTools} from '@/components/devtools';
+import {DevTools} from '@/components/DevTools';
 
 export type ReactFlowCommonProps = Pick<
 	ReactFlowProps,

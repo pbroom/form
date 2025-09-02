@@ -145,6 +145,17 @@ Set up Convex backend scaffolding and wired client/provider.
 
 ## Entry 14
 
+Captured Code View authoring conventions and inference policy.
+
+- Action: Added Node Package layout; TS/JS inference; GLSL/Python inference via entry function with hints; overlays precedence (ports/meta/controls/hud/dialogs)
+- Files/Areas: `docs/architecture/ARCHITECTURE.md`, `docs/increments/pi-4/charter.md`
+- Decisions: Prefer inference first; require `ports` overlay on ambiguity
+- Issues/Risks: Parser tolerance for non-TS languages; HUD/control sandboxing
+- Learnings: Multi-file packages improve readability and refactorability
+- Tests/Artifacts: Doc-only; implementation to follow in future effort
+
+## Entry 14
+
 Ensured Tailwind styles override React Flow defaults by adjusting global CSS import order and deduping imports.
 
 - Action: Imported `@xyflow/react/dist/style.css` globally in `src/main.tsx` before `index.css`; removed local imports in `NodeGraphEditor.tsx` and `NodeGraphEditor(Legacy).tsx`; fixed stale import path in legacy editor
@@ -153,3 +164,79 @@ Ensured Tailwind styles override React Flow defaults by adjusting global CSS imp
 - Issues/Risks: Vite config error prevents running unit tests locally right now; style changes are low-risk
 - Learnings: Globalizing library CSS avoids future regressions and ensures Tailwind precedence
 - Tests/Artifacts: Manual verification; unit tests deferred due to Vite startup error
+
+## Entry 15
+
+Extended runtime IR to support template-driven nodes and HUD metadata.
+
+- Action: Added `templateRef` and `hud` fields to `GraphNode`; introduced Template types and Zod schemas
+- Files/Areas: `src/lib/ir/types.ts`, `src/lib/ir/schema.ts`, `docs/increments/pi-4/charter.md`
+- Decisions: Keep extensions optional for full backward compatibility; do not change existing node ops; map to future Libraries/Planes
+- Issues/Risks: None observed in unit scope; Playwright suites remain configured to run under PW runner and are excluded from unit run
+- Learnings: IR can evolve incrementally without touching emitter/ops when additions are optional
+- Tests/Artifacts: `pnpm test` unit suites green (64 passed); Playwright specs intentionally fail under vitest runner (expected)
+
+## Entry 16
+
+## Entry 17
+
+Implemented a HUD component that mirrors React Flow's Node Appendix behavior and integrated it into nodes.
+
+- Action: Added `Hud` wrapper that matches node backdrop width and floats above; integrated conditional HUD render in `Node.tsx`; added example HUD content to default `code-a` node showing position, connections, and selection state
+- Files/Areas: `src/components/node-ui/node-primitives.tsx`, `src/components/Node.tsx`, `src/components/initial-nodes.ts`, `docs/increments/pi-4/charter.md`
+- Decisions: Local implementation instead of shadcn installer due to CLI/node version incompatibility; keep API simple with `hud` in node data (node-local render)
+- Issues/Risks: Visual polish may be adjusted later; ensure z-index layering with React Flow overlays; shadcn install failed under Node 18 (execa ESM export)
+- Learnings: Using `useStore` we can surface live node position and edge counts for HUDs without extra state
+- Tests/Artifacts: Manual verification on launch; unit tests unchanged
+
+## Entry 18
+
+Fixed initial nodes HUD syntax and evaluated Node 24 upgrade impact.
+
+- Action: Replaced JSX in `initial-nodes.ts` HUD with string output; upgraded Node via Homebrew and installed official Node Appendix; reinstalled deps and attempted build/tests
+- Files/Areas: `src/components/initial-nodes.ts`, `src/components/node-ui/node-primitives.tsx`, `src/components/node-appendix.tsx`
+- Decisions: Keep HUD content simple (string) in `.ts`; maintain Node 24, accept that build currently fails due to unrelated TS type issues in Convex client code
+- Issues/Risks: Build fails on `convexProjectsClient.ts` type signatures; Playwright suites intentionally fail under vitest; unit tests pass
+- Learnings: Node 24 itself is fine; failures are type-level and test-runner configuration, not runtime
+- Tests/Artifacts: `pnpm test` unit suites pass; build error points to Convex FunctionReference typings
+  Added Floating Dialogs architecture and linked it into the main architecture doc; updated PI-4 charter with a new effort.
+
+- Action: Authored `docs/architecture/floating-dialogs.md`; referenced from `ARCHITECTURE.md`; added new Effort to PI-4 charter
+- Files/Areas: `docs/architecture/floating-dialogs.md`, `docs/architecture/ARCHITECTURE.md`, `docs/increments/pi-4/charter.md`
+- Decisions: Use a small Zustand store to manage open/close/stack/position; portal-hosted presentational component; parent→child lifecycle via `parentId`; defer resizable/docking
+- Issues/Risks: None immediate; ensure focus trap + a11y in implementation; coordinate with Properties triggers
+- Learnings: Dialog layering benefits from an explicit stack model separate from React Flow layers
+- Tests/Artifacts: `pnpm test` results — 18 passed, 9 failed (expected PW suites under vitest); unit total 64 passed
+
+## Entry 19
+
+Swapped CodeMirror for Monaco editor and unified code editing via shared `CodeView`.
+
+- Action: Installed `monaco-editor` and `@monaco-editor/react`; refactored `src/components/CodeView.tsx` to use Monaco; updated `src/components/PropertiesPanel.tsx` to reuse `CodeView` instead of embedding CodeMirror directly
+- Files/Areas: `package.json`, `pnpm-lock.yaml`, `src/components/CodeView.tsx`, `src/components/PropertiesPanel.tsx`
+- Decisions: Preserve `data-testid="code-editor-textarea"` and value/onChange API; minimal Monaco options (no minimap, 100px height) to match prior UX; keep light theme in `CodeView` since it's a standalone panel
+- Issues/Risks: Bundle size increases (lazy-loaded); future worker/CSP tuning if needed
+- Learnings: `@monaco-editor/react` integrates cleanly with Vite without extra config for basic usage
+- Tests/Artifacts: `pnpm test` → unit suites pass; 9 Playwright suites fail under Vitest runner (known/unchanged configuration issue). Selectors remained stable. Monaco theme bound to app theme (light/dark).
+
+## Entry 20
+
+Fixed Monaco system-theme detection so dark mode applies when app is set to `system` and OS is dark.
+
+- Action: Corrected `matchMedia` feature check in `CodeView.tsx`
+- Files/Areas: `src/components/CodeView.tsx`
+- Decisions: Keep lightweight in-component detection; no global theme bridge needed
+- Issues/Risks: None
+- Learnings: Small typos in feature checks can break system-theme behavior subtly
+- Tests/Artifacts: Manual verify; no unit tests for UI theme switch
+
+## Entry 21
+
+Added a loading skeleton for Monaco editor.
+
+- Action: Used shared `Skeleton` component as the `loading` fallback for `@monaco-editor/react` in `CodeView`
+- Files/Areas: `src/components/CodeView.tsx`, `src/components/ui/skeleton.tsx`
+- Decisions: Match editor height (100px) and full width for consistent layout during lazy load
+- Issues/Risks: None; purely visual improvement
+- Learnings: `@monaco-editor/react` exposes a `loading` prop for lightweight placeholders
+- Tests/Artifacts: Visual check; no behavioral changes

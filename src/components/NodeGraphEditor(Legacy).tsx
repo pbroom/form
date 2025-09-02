@@ -17,7 +17,7 @@ import Viewport, {type ViewGraphState} from './Viewport';
 import {useEffect, useRef, useState} from 'react';
 import CommandPalette from './CommandPalette';
 import PropertiesPanel from './PropertiesPanel';
-import CodeViewPanel from './CodeViewPanel';
+import CodeViewPanel from './CodeView';
 import CodeExportModal from './CodeExportModal';
 import ParameterConnectionOverlay from './ParameterConnectionOverlay';
 import CustomEdge from './DynamicEdge';

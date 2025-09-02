@@ -18,7 +18,13 @@ export const initialNodes: Node<NodeData>[] = [
 	{
 		id: 'code-a',
 		type: 'custom',
-		data: {typeKey: 'code', label: 'Add 1', params: {}},
+		data: {
+			typeKey: 'code',
+			label: 'Add 1',
+			params: {},
+			hud: ({position, connections, selected}) =>
+				`pos: ${position ? `${Math.round(position.x)}, ${Math.round(position.y)}` : '—'} · conn: ${connections} · selected: ${selected ? 'yes' : 'no'}`,
+		},
 		position: {x: 220, y: -60},
 	},
 	{

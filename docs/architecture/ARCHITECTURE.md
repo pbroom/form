@@ -95,7 +95,42 @@ type IRNode = {
 
 - **Node Graph Editor**: React Flow + custom Handle/Edge.
 - **Properties Panel**: schema-driven; shadcn UI components.
+- **Floating Dialogs**: draggable, stackable dialogs for transient tools (see [Floating Dialogs](./floating-dialogs.md)).
 - **Code View**: CodeMirror w/ diagnostics.
+
+### 5.1 Code View & Node Authoring (conventions)
+
+- Authoring targets a tiny, predictable convention. Default (TS/JS) nodes infer inputs from function params and outputs from the return value. Non‑TS languages provide a small overlay.
+- Multi‑file “Node Package” layout (readability & scale):
+  - `node.ts|tsx`: pure function (TS/JS) defining ports by signature/return
+  - `ports.(ts|yaml)`: optional explicit ports (overrides; required for GLSL/Python)
+  - `meta.yaml`: label/color/description/tags
+  - `hud.tsx`: small React HUD rendered above header
+  - `controls.tsx`: custom property controls (controlled components)
+  - `dialogs/*.tsx`: optional modal UIs for complex interactions (+ zod schemas)
+  - `impl/*`: non‑TS sources (e.g., `shader.glsl`, `node.py`)
+  - `index.manifest.json`: ties files together
+
+Inference rules
+
+- TS/JS: function parameters = inputs (defaults override system defaults); return object keys = outputs; primitive return → single `out`.
+- Python: infer when a single entry `def node(...) -> ...` exists with type hints (PEP‑484). `dict[str,T]` → named outputs; tuples → multiple outputs. If no hints → require `ports` overlay.
+- GLSL: infer when a single entry `node(...)` exists. Return type or `out` params define outputs; struct return splits into named outputs. Preprocessor/multiple candidates → require `ports`.
+
+Overlays & precedence
+
+- `ports` overrides all inference for types/labels/visibility/controls.
+- `meta` provides human metadata only.
+- `controls` maps input name → React component. `hud` provides an inline preview.
+
+Constraints
+
+- All node code is pure/idempotent; external deps only via declared assets/runtime.
+- Deterministic snapshots store manifest + resolved ports + content hashes.
+
+Refactors
+
+- “Extract to Node/Subgraph” moves a pure function into a Node Package, generates manifest/meta/ports, registers a template, inserts a linked instance, and rewires the graph.
 - **Viewport**: WebGPU/WebGL preview.
 - **Library Panel**: search/insert templates/assets.
 - **Display Nodes**: inline preview nodes; budgeted/throttled.
@@ -126,7 +161,6 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
 ### Increment Artifacts
 
 - **Increment Charter (IC)**:
-
   - Context Capsule: aim + constraints
   - Focus: 1–2 sentences (what we ship)
   - Prioritized ACs: cornerstone acceptance criteria
@@ -151,14 +185,12 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
 ## 8. Roadmap Phases (high-level)
 
 - **Phase 1 – MVP Core**
-
   - TS code nodes (linked, inline)
   - Properties from schema
   - Command log + undo/redo
   - Convex sync + projects
 
 - **Phase 2 – Planes & Libraries**
-
   - Grouping → subgraph templates
   - PIC autogen
   - Library CRUD
@@ -166,14 +198,12 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
   - Snapshots
 
 - **Phase 3 – Displays & Search**
-
   - Display nodes (image/scalar)
   - GLSL node runtime
   - Library search & filters
   - Roles/sharing
 
 - **Phase 4 – Attachments & Upgrades**
-
   - Attachment modes (forked, baked, inline)
   - Upgrade/remap wizard
   - Overrides

@@ -7,7 +7,86 @@ export const GraphParameterValueSchema = z.union([
 	z.null(),
 ]);
 
-// PI-3: Code Node schema
+// Runtime IR – Template & Instance model
+const PortTypeSchema = z.union([
+	z.literal('number'),
+	z.literal('string'),
+	z.literal('boolean'),
+	z.literal('color'),
+	z.literal('asset'),
+	z.literal('any'),
+]);
+
+const TemplatePortsSchema = z.object({
+	inputs: z
+		.array(
+			z.object({
+				key: z.string().min(1),
+				type: PortTypeSchema,
+				required: z.boolean().optional(),
+				variadic: z.boolean().optional(),
+			})
+		)
+		.default([]),
+	outputs: z
+		.array(
+			z.object({
+				key: z.string().min(1),
+				type: PortTypeSchema,
+				defaultExport: z.boolean().optional(),
+			})
+		)
+		.default([]),
+	exposure: z.array(z.string().min(1)).optional(),
+});
+
+const TemplateUiHintSchema = z.object({
+	min: z.number().optional(),
+	max: z.number().optional(),
+	step: z.number().optional(),
+	control: z
+		.union([
+			z.literal('slider'),
+			z.literal('select'),
+			z.literal('color'),
+			z.literal('checkbox'),
+			z.literal('text'),
+		])
+		.optional(),
+});
+
+export const TemplateManifestSchema = z.object({
+	name: z.string().min(1),
+	kind: z.union([z.literal('code'), z.literal('subgraph')]),
+	version: z.string().min(1),
+	tags: z.array(z.string()).optional(),
+	ports: TemplatePortsSchema,
+	uiHints: z.record(TemplateUiHintSchema).optional(),
+	code: z.object({source: z.string().min(1)}).optional(),
+	subgraphRef: z.object({moduleName: z.string().min(1)}).optional(),
+});
+
+const TemplateAttachmentSchema = z.union([
+	z.literal('linked'),
+	z.literal('forked'),
+	z.literal('inline'),
+	z.literal('baked'),
+]);
+
+export const TemplateRefSchema = z.object({
+	id: z.string().min(1),
+	version: z.string().min(1),
+	attachment: TemplateAttachmentSchema,
+	inlineManifest: TemplateManifestSchema.optional(),
+	bakedArtifactRef: z.string().min(1).optional(),
+});
+
+export const NodeHudSchema = z.object({
+	kind: z.union([z.literal('tags'), z.literal('preview'), z.literal('metric')]),
+	config: z.record(z.unknown()).optional(),
+});
+
+// PI-3: Code Node schema (retained for backwards compatibility)
 const CodeSocketTypeSchema = z.union([
 	z.literal('number'),
 	z.literal('string'),
@@ -41,6 +120,9 @@ const BaseGraphNodeSchema = z.object({
 	typeKey: z.string().min(1),
 	label: z.string().optional(),
 	params: z.record(GraphParameterValueSchema).optional(),
+	// Runtime IR extensions
+	templateRef: TemplateRefSchema.optional(),
+	hud: NodeHudSchema.optional(),
 });
 
 const CodeGraphNodeSchema = BaseGraphNodeSchema.extend({

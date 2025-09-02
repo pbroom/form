@@ -8,6 +8,7 @@ import {
 	Position,
 	type ConnectionLineComponentProps,
 } from '@xyflow/react';
+import {NodeAppendix} from '@/components/node-appendix';
 
 type WithChildren<T = unknown> = React.PropsWithChildren<T> & {
 	className?: string;
@@ -219,7 +220,7 @@ export function NodeConnectionLine({
 	});
 
 	return (
-		<svg className='absolute overflow-visible pointer-events-none'>
+		<svg className='absolute overflow-visible pointer-events-none stroke-round'>
 			<path
 				d={path}
 				fill='none'
@@ -228,5 +229,18 @@ export function NodeConnectionLine({
 				strokeWidth={1.5}
 			/>
 		</svg>
+	);
+}
+
+// Hud wrapper that mirrors the width of NodeBackdrop and floats above the node
+export function Hud({children, className}: WithChildren) {
+	if (!children) return null;
+	return (
+		<NodeAppendix
+			position='top'
+			className={cn('left-6 right-6 top-0 z-10', className)}
+		>
+			<div className='w-full px-2 py-1 text-[11px]'>{children}</div>
+		</NodeAppendix>
 	);
 }

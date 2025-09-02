@@ -120,3 +120,15 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+@utility stroke-butt {
+	stroke-linecap: butt;
+}
+
+@utility stroke-round {
+	stroke-linecap: round;
+}
+
+@utility stroke-square {
+	stroke-linecap: square;
+}
