@@ -240,3 +240,14 @@ Added a loading skeleton for Monaco editor.
 - Issues/Risks: None; purely visual improvement
 - Learnings: `@monaco-editor/react` exposes a `loading` prop for lightweight placeholders
 - Tests/Artifacts: Visual check; no behavioral changes
+
+## Entry 22
+
+Made Code View vertically resizable in Properties Panel with persisted height and min-heights.
+
+- Action: Added resizer handle and localStorage persistence; `CodeView` now accepts `heightPx`; enforced smart minimum heights for code area and below content
+- Files/Areas: `src/components/PropertiesPanel.tsx`, `src/components/CodeView.tsx`
+- Decisions: Store height under `codeViewHeightPx`; min code 120px; min below 160px
+- Issues/Risks: Keyboard resizing not implemented yet; can add for a11y later
+- Learnings: Simple inline resizer avoids extra dependency
+- Tests/Artifacts: Manual resize verified; collapse preserves last expanded height

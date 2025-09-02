@@ -1,4 +1,5 @@
 import {type Node} from '@xyflow/react';
+import {useEffect, useRef, useState} from 'react';
 import {cn} from '@/lib/utils';
 import {
 	getNodeDefinition,
@@ -92,6 +93,53 @@ export default function PropertiesPanel({
 	onLabelChange,
 	validationErrors = [],
 }: PropertiesPanelProps) {
+	const panelRef = useRef<HTMLDivElement | null>(null);
+	const resizerRef = useRef<HTMLDivElement | null>(null);
+	const MIN_CODE_PX = 120;
+	const MIN_BELOW_PX = 160;
+	const [codeHeightPx, setCodeHeightPx] = useState<number>(() => {
+		const stored = localStorage.getItem('codeViewHeightPx');
+		const parsed = stored ? parseInt(stored, 10) : NaN;
+		return Number.isFinite(parsed) && parsed >= MIN_CODE_PX ? parsed : 240;
+	});
+
+	useEffect(() => {
+		localStorage.setItem('codeViewHeightPx', String(codeHeightPx));
+	}, [codeHeightPx]);
+
+	const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault();
+		const startY = e.clientY;
+		const startHeight = codeHeightPx;
+
+		const onMove = (ev: MouseEvent) => {
+			const dy = ev.clientY - startY;
+			let next = startHeight + dy;
+			// Enforce minimum code height
+			next = Math.max(MIN_CODE_PX, next);
+			// Enforce minimum space for content below the resizer within the panel
+			const panelRect = panelRef.current?.getBoundingClientRect();
+			const resizerRect = resizerRef.current?.getBoundingClientRect();
+			if (panelRect && resizerRect) {
+				const panelBottom = panelRect.bottom;
+				const resizerTopNext = resizerRect.top + dy;
+				const spaceBelow = panelBottom - resizerTopNext;
+				if (spaceBelow < MIN_BELOW_PX) {
+					const deficit = MIN_BELOW_PX - spaceBelow;
+					next = Math.max(MIN_CODE_PX, next - deficit);
+				}
+			}
+			setCodeHeightPx(next);
+		};
+
+		const onUp = () => {
+			document.removeEventListener('mousemove', onMove);
+			document.removeEventListener('mouseup', onUp);
+		};
+
+		document.addEventListener('mousemove', onMove);
+		document.addEventListener('mouseup', onUp);
+	};
 	const debouncedParamChange = useDebouncedCallback(
 		(nodeId: string, key: string, value: unknown) =>
 			onParamChange(nodeId, key, value),
@@ -113,7 +161,10 @@ export default function PropertiesPanel({
 	const isCodeNode = node.data.typeKey === 'code';
 
 	return (
-		<div className={cn('h-full w-full p-3 space-y-3 bg-card/40')}>
+		<div
+			ref={panelRef}
+			className={cn('h-full w-full p-3 space-y-3 bg-card/40')}
+		>
 			<div className='flex items-center justify-between gap-3'>
 				<div className='text-xs text-muted-foreground'>
 					{def?.label ?? 'Node'}
@@ -136,6 +187,15 @@ export default function PropertiesPanel({
 								value={getCode(node.id)}
 								onChange={(val) => setCode(node.id, val)}
 								validationMessage={undefined}
+								heightPx={codeHeightPx}
+							/>
+							<div
+								ref={resizerRef}
+								role='separator'
+								aria-orientation='horizontal'
+								aria-label='Resize code editor'
+								onMouseDown={startDrag}
+								className='h-2 mt-2 cursor-row-resize rounded-sm bg-border/60 hover:bg-border'
 							/>
 						</CollapsibleContent>
 					</Collapsible>

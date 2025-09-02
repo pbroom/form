@@ -10,6 +10,8 @@ type CodeViewProps = {
 	onChange?: (code: string) => void;
 	validationMessage?: string | null;
 	value?: string;
+	/** Optional explicit height in pixels (defaults to 240) */
+	heightPx?: number;
 };
 
 export default function CodeView({
@@ -17,6 +19,7 @@ export default function CodeView({
 	onChange,
 	validationMessage,
 	value,
+	heightPx,
 }: CodeViewProps) {
 	const isCodeNode = node?.data?.typeKey === 'code';
 	const {theme} = useTheme();
@@ -27,6 +30,8 @@ export default function CodeView({
 			'matchMedia' in window &&
 			window.matchMedia('(prefers-color-scheme: dark)').matches);
 	const monacoTheme = isDark ? 'vs-dark' : 'vs-light';
+
+	const editorHeight = `${heightPx ?? 240}px`;
 
 	return (
 		<div
@@ -43,7 +48,7 @@ export default function CodeView({
 						data-testid='code-editor-textarea'
 						value={value ?? ''}
 						language='typescript'
-						height='240px'
+						height={editorHeight}
 						theme={monacoTheme}
 						loading={
 							<div className='h-60 w-full flex flex-col gap-2'>
