@@ -1,6 +1,7 @@
 /* stylelint-disable */
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './styles/monaco.css';
 @import './styles/overrides.css';
 
 @custom-variant dark (&:is(.dark *));

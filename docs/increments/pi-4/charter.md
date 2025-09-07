@@ -48,6 +48,7 @@
   - Tasks:
     - [x] Replace CodeMirror with Monaco in `CodeView`
     - [x] Reuse `CodeView` from `PropertiesPanel` to avoid duplication
+    - [x] Expose editor preferences: custom light/dark themes, monospace font, minimap
     - [ ] Expose simple options prop for future QoL (formatting/folding)
   - ACs:
     - [x] Editors render with `data-testid="code-editor-textarea"` unchanged

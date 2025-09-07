@@ -154,7 +154,7 @@ Captured Code View authoring conventions and inference policy.
 - Learnings: Multi-file packages improve readability and refactorability
 - Tests/Artifacts: Doc-only; implementation to follow in future effort
 
-## Entry 14
+## Entry 15
 
 Ensured Tailwind styles override React Flow defaults by adjusting global CSS import order and deduping imports.
 
@@ -165,7 +165,7 @@ Ensured Tailwind styles override React Flow defaults by adjusting global CSS imp
 - Learnings: Globalizing library CSS avoids future regressions and ensures Tailwind precedence
 - Tests/Artifacts: Manual verification; unit tests deferred due to Vite startup error
 
-## Entry 15
+## Entry 16
 
 Extended runtime IR to support template-driven nodes and HUD metadata.
 
@@ -176,14 +176,12 @@ Extended runtime IR to support template-driven nodes and HUD metadata.
 - Learnings: IR can evolve incrementally without touching emitter/ops when additions are optional
 - Tests/Artifacts: `pnpm test` unit suites green (64 passed); Playwright specs intentionally fail under vitest runner (expected)
 
-## Entry 16
-
 ## Entry 17
 
 Implemented a HUD component that mirrors React Flow's Node Appendix behavior and integrated it into nodes.
 
 - Action: Added `Hud` wrapper that matches node backdrop width and floats above; integrated conditional HUD render in `Node.tsx`; added example HUD content to default `code-a` node showing position, connections, and selection state
-- Files/Areas: `src/components/node-ui/node-primitives.tsx`, `src/components/Node.tsx`, `src/components/initial-nodes.ts`, `docs/increments/pi-4/charter.md`
+- Files/Areas: `src/components/node-ui/node-primitives.tsx`, `src/components/Node.tsx`, `src/components/initial-nodes.ts`, `src/components/node-appendix.tsx`
 - Decisions: Local implementation instead of shadcn installer due to CLI/node version incompatibility; keep API simple with `hud` in node data (node-local render)
 - Issues/Risks: Visual polish may be adjusted later; ensure z-index layering with React Flow overlays; shadcn install failed under Node 18 (execa ESM export)
 - Learnings: Using `useStore` we can surface live node position and edge counts for HUDs without extra state
@@ -243,11 +241,103 @@ Added a loading skeleton for Monaco editor.
 
 ## Entry 22
 
-Made Code View vertically resizable in Properties Panel with persisted height and min-heights.
+Added user-configurable Monaco editor preferences (themes, font, minimap) and wired them into `CodeView`.
 
-- Action: Added resizer handle and localStorage persistence; `CodeView` now accepts `heightPx`; enforced smart minimum heights for code area and below content
-- Files/Areas: `src/components/PropertiesPanel.tsx`, `src/components/CodeView.tsx`
-- Decisions: Store height under `codeViewHeightPx`; min code 120px; min below 160px
-- Issues/Risks: Keyboard resizing not implemented yet; can add for a11y later
-- Learnings: Simple inline resizer avoids extra dependency
-- Tests/Artifacts: Manual resize verified; collapse preserves last expanded height
+- Action: Created `useEditorPreferences` Zustand store with light/dark theme definitions, monospace font controls, and minimap options; integrated `CodeView.tsx` to define and switch custom themes (`app-light`/`app-dark`) and pass font/minimap options; fixed linter types with `monaco-editor` theme data and `useCallback`.
+- Files/Areas: `src/store/editorPreferences.ts`, `src/components/CodeView.tsx`, `docs/increments/pi-4/charter.md`
+- Decisions: Theme objects live in a store for future UI controls; use Monaco `beforeMount`/`onMount` hooks to define themes and keep in sync; preserve existing test ids and layout.
+- Issues/Risks: E2E Playwright suites still fail under Vitest runner (expected/unchanged); future UI needed to expose controls in-app.
+- Learnings: Custom themes are trivial to register via Monaco; keeping theme definitions in state makes future settings UI straightforward.
+- Tests/Artifacts: `pnpm test` — unit suites green (64 passed), 9 Playwright files fail when run via Vitest (unchanged); no new unit tests required for preferences.
+
+## Entry 23
+
+Wired Monaco theme colors to CSS variables with runtime resolution.
+
+- Action: Added `useCssVariables` flag and `cssVarMapping` to editor preferences; updated `CodeView.tsx` to resolve Monaco theme color keys from CSS variables at mount/update and re-define `app-light`/`app-dark`.
+- Files/Areas: `src/store/editorPreferences.ts`, `src/components/CodeView.tsx`
+- Decisions: Resolve CSS vars at runtime to inherit Tailwind theme tokens; keep fallback hex colors in store; avoid global side-effects by defining themes per mount.
+- Issues/Risks: CSS var resolution uses a hidden element; negligible perf impact at mount/update; ensure variables exist in `src/index.css`.
+- Learnings: Converting computed RGB to HEX yields stable Monaco-compatible colors; mapping keeps config minimal.
+- Tests/Artifacts: Lint run shows unrelated pre-existing issues; unit tests pass (64), Playwright files still fail under Vitest runner (unchanged).
+
+## Entry 24
+
+Removed static Monaco theme JSON and switched fully to CSS-variable compiled themes.
+
+- Action: Cleared hard-coded `rules`/`colors` in default themes and enabled `useCssVariables` by default; themes now compile from `src/styles/monaco.css` vars via `CodeView`.
+- Files/Areas: `src/store/editorPreferences.ts`, `src/components/CodeView.tsx`, `src/styles/monaco.css`
+- Decisions: Single source of truth in CSS; keep mapping objects in the store for deterministic compile.
+- Issues/Risks: Lint has unrelated pre-existing errors in other files; E2E under Vitest remains failing (unchanged); editor works via runtime compiled themes.
+- Learnings: Compiling Monarch rules from CSS vars keeps design tokens centralized and easy to theme.
+- Tests/Artifacts: `pnpm test` → unit suites pass; same 9 Playwright files fail under Vitest; `pnpm lint` shows existing issues not introduced by this change.
+
+## Entry 25
+
+Unified Monaco theming, added TextMate wiring with bundled assets, and improved DX.
+
+- Action:
+  - Unified CSS variable scheme: Monarch tokens via `--monaco-token-*`, TextMate scopes via both `--tm-scope-*` and `--monaco-scope-*`; added optional `-font-style` and `-background` for tokens/scopes
+  - Enabled TextMate wiring with onigasm; vendored `onigasm.wasm` into `src/vendor/` and load via `?url`
+  - Bundled grammars: auto-import `src/grammars/*.tmLanguage.json`; kept public fallbacks; added setup script to fetch/copy grammars
+  - Added HMR for CSS-driven theme updates and fixed Vite glob deprecation (use `query: '?raw', import: 'default'`)
+- Files/Areas: `src/components/CodeView.tsx`, `src/styles/monaco.css`, `src/lib/code/monacoTextmate.ts`, `scripts/fetch-grammars.ts`, `src/vendor/onigasm.wasm`, `src/grammars/*`
+- Decisions: Prefer bundled assets for determinism; keep public fallbacks optional; allow unified CSS var prefixes to simplify authoring
+- Issues/Risks: Custom TM scopes require grammars present; per-language `--monaco-token-<lang>-*` set limited to known ids (extensible); performance looks fine (theme compile on HMR)
+- Learnings: Unifying var prefixes reduces friction; bundling grammars/WASM avoids env drift
+- Tests/Artifacts: Manual verify hot-reload; lint clean; Vite warning resolved; editor themes reflect CSS var edits immediately
+
+## Entry 26
+
+Stabilized Monaco content across language swaps and collapsible toggles; added language registry UI.
+
+- Action: Switched `CodeView` to a single persistent Monaco `ITextModel` with a stable `inmemory://` URI; change language via `monaco.editor.setModelLanguage` instead of recreating models; registered `glsl`/`c` language ids; added selector bound to a registry/store
+- Files/Areas: `src/components/CodeView.tsx`, `src/lib/code/languages.ts`, `src/store/editorPreferences.ts`
+- Decisions: Persist one model per node id; avoid controlled `value/path` props so mount/unmount and collapsible toggles don’t reset content
+- Issues/Risks: None observed; TextMate grammars must exist for GLSL/C to avoid plaintext
+- Learnings: Model recreation was the root cause of resets on language swap and collapsible re-mount
+- Tests/Artifacts: `pnpm test` unit suites: 64 passed; Playwright e2e specs still fail under Vitest runner (expected for now)
+
+## Entry 27
+
+Refactored `CodeView` for clarity by extracting theme + HMR helpers.
+
+- Action: Moved CSS→Monaco theme logic into `src/lib/code/theme-css.ts` and Vite CSS HMR into `src/lib/hooks/useViteCssHmr.ts`; simplified `CodeView.tsx` to focus on model, mount, and language switching
+- Files/Areas: `src/components/CodeView.tsx`, `src/lib/code/theme-css.ts`, `src/lib/hooks/useViteCssHmr.ts`
+- Decisions: Keep helpers framework-agnostic; compose themes via `composeTheme`; reuse existing store mappings; no behavior changes
+- Issues/Risks: None; lints green
+- Learnings: Isolating CSSOM scanning and HMR greatly improves readability and testability
+- Tests/Artifacts: `pnpm test` unit suites still 64 passed; lint clean for changed files
+
+## Entry 28
+
+Unified token CSS variable prefix to `--mt-` and aligned TM wiring.
+
+- Action: Switched store/config to use `--mt-` for both Monaco token and TM scopes; updated theme helpers to support language-specific suffix (e.g., `--mt-…-tsx`) overriding base; updated sample CSS
+- Files/Areas: `src/store/editorPreferences.ts`, `src/lib/code/theme-css.ts`, `src/styles/monaco.css`, `src/components/CodeView.tsx` (uses composed theme)
+- Decisions: Use TextMate-oriented theming for simplicity; maintain Monaco theme registration but derive all rules from `--mt-` variables
+- Issues/Risks: Ensure grammars loaded so TM scopes resolve; fallback remains editor color vars under `--monaco-editor-`
+- Learnings: One prefix reduces confusion; suffix-based language override is easy to author
+- Tests/Artifacts: Lint clean; manual verify variables like `--mt-punctuation-definition-block-tsx` override base
+
+## Entry 29
+
+TM token colors now win over Monaco's own bracket/occurrence highlights.
+
+- Action: Disabled Monaco bracket pair colorization and matching (`bracketPairColorization.enabled=false`, `matchBrackets='never'`), plus turned off occurrences highlight so built-in overlays don't override TM classes
+- Files/Areas: `src/components/CodeView.tsx`
+- Decisions: Prioritize TextMate-driven styling for consistent CSS-variable control
+- Issues/Risks: Loses built-in bracket pair colors (intentional); pair guides unaffected
+- Learnings: Monaco overlays can supersede token colors if not disabled
+- Tests/Artifacts: Manual verify DevTools shows only TM class color applied on brackets
+
+## Entry 30
+
+Applied true TextMate theme from CSS vars with specificity ordering and language overrides.
+
+- Action: Ordered TM theme generation from `--mt-` vars by scope depth and language suffix; applied theme to monaco-textmate registry when supported; aligned ids (`tsx`/`jsx`) handled by grammar map
+- Files/Areas: `src/lib/code/monacoTextmate.ts`
+- Decisions: Keep CSS-only authoring for colors; leverage TM theme precedence for rich scopes
+- Issues/Risks: Registry `setTheme` may be a no-op on some versions (we still map colors via Monaco theme too)
+- Learnings: Theme ordering is required for specific scopes (e.g., punctuation.definition.comment.tsx) to override base tokens
+- Tests/Artifacts: Manual verification with inspector; lints green
