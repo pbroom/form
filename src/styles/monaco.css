@@ -31,3 +31,5 @@
 	--mt-punctuation-definition-block-tsx: #ff0000;
 	/* --mt-delimiter-bracket-ts: #999999; */
 }
+
+/* Ensure Monaco base CSS is present for layout; Shiki colors come from token classes */

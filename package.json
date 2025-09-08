@@ -19,7 +19,7 @@
 		"generate:adapters": "tsx scripts/generate-drei-registry.ts",
 		"convex:dev": "convex dev --tail-logs",
 		"convex:codegen": "convex codegen",
-		"setup:tm": "tsx scripts/fetch-grammars.ts"
+		"setup:tm": "echo 'modern-monaco uses Shiki; no grammar fetch needed'"
 	},
 	"dependencies": {
 		"@convex-dev/eslint-plugin": "0.0.1-alpha.4",
@@ -54,14 +54,18 @@
 		"convex-helpers": "^0.1.104",
 		"d3": "^7.9.0",
 		"lucide-react": "^0.536.0",
+		"modern-monaco": "^0.1.9",
 		"monaco-editor": "^0.52.2",
 		"motion": "^12.23.12",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"react-resizable-panels": "^3.0.4",
+		"shiki": "^1.22.0",
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.11",
 		"three": "^0.179.1",
+		"tm-grammars": "^1.24.11",
+		"tm-themes": "^1.10.9",
 		"zod": "^3.23.8",
 		"zustand": "^5.0.8"
 	},
@@ -69,6 +73,7 @@
 		"@codemirror/lang-javascript": "^6.2.4",
 		"@eslint/js": "^9.32.0",
 		"@playwright/test": "^1.47.2",
+		"@shikijs/monaco": "^1.29.2",
 		"@types/d3": "^7.4.3",
 		"@types/node": "^24.1.0",
 		"@types/react": "^19.1.9",
@@ -83,15 +88,19 @@
 		"globals": "^16.3.0",
 		"linkinator": "^6.0.3",
 		"markdownlint-cli": "^0.41.0",
-		"monaco-textmate": "^8.0.0",
-		"onigasm": "^2.2.5",
 		"tsx": "^4.20.4",
 		"tw-animate-css": "^1.3.6",
-		"typedoc": "^0.26.11",
+		"typedoc": "^0.27.0",
 		"typescript": "~5.8.3",
 		"typescript-eslint": "^8.38.0",
 		"vite": "^5.4.19",
-		"vitepress": "^1.3.4",
+		"vitepress": "^1.6.4",
 		"vitest": "^2.0.5"
+	},
+	"pnpm": {
+		"overrides": {
+			"@docsearch/react": "^3.9.0",
+			"@docsearch/js": "^3.9.0"
+		}
 	}
 }

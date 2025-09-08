@@ -1,5 +1,15 @@
 # Increment Log – PI-4
 
+## 2025-09-07 — Resolve unmet peer dependencies (docs tooling)
+
+- Summary: Updated docs-related deps to eliminate peer warnings from TypeDoc and DocSearch when using TS 5.8 and React 19.
+- Action: Bumped `typedoc` to ^0.27.x; upgraded `vitepress` to ^1.6.4; added pnpm overrides for `@docsearch/react` and `@docsearch/js` to ^3.9.x.
+- Files/Areas: `package.json` (devDependencies, pnpm.overrides), lockfile; docs charter updated.
+- Decisions: Prefer minor bump of TypeDoc (>=0.27) compatible with TS 5.8; align VitePress to 1.6.x; pin DocSearch to a React 19–compatible line via overrides.
+- Issues/Risks: DocSearch React 19 support varies by minor; overrides may need revisiting on future VitePress updates.
+- Learnings: VitePress pulls DocSearch; overrides are the simplest way to satisfy React 19 peer ranges.
+- Tests/Artifacts: Ran unit tests after install — 18 passed, 9 Playwright suites failed (expected; e2e currently run under PW and not part of this change). No unit regressions observed.
+
 ## Entry 1
 
 Initializing PI-4 with focus on shippable Code Node, safe runtime preview, minimal codegen integration, and UX hardening.
@@ -341,3 +351,14 @@ Applied true TextMate theme from CSS vars with specificity ordering and language
 - Issues/Risks: Registry `setTheme` may be a no-op on some versions (we still map colors via Monaco theme too)
 - Learnings: Theme ordering is required for specific scopes (e.g., punctuation.definition.comment.tsx) to override base tokens
 - Tests/Artifacts: Manual verification with inspector; lints green
+
+## Entry 31
+
+Migrated editor highlighting to Shiki + modern-monaco; removed legacy TM wiring.
+
+- Action: Added `modern-monaco`, `@shikijs/monaco`, and Shiki; implemented `buildShikiThemeFromCss` from `--mt-*` vars with language overrides; swapped `CodeView` to manual modern-monaco init and applied Shiki theme; wired CSS HMR to reapply theme; removed `monacoTextmate.ts`, `scripts/fetch-grammars.ts`; updated `setup:tm` to no-op
+- Files/Areas: `src/components/CodeView.tsx`, `src/lib/code/theme-shiki.ts`, `package.json`, `src/styles/monaco.css`, removed legacy TM files
+- Decisions: Prefer Shiki/Monaco integration for rich scopes and simpler asset handling; keep bracket overlays disabled
+- Issues/Risks: Theme compile depends on CSSOM access; ensure variables exist; dynamic imports require network on first load
+- Learnings: Shiki scope ordering via CSS-driven theme provides deterministic, language-specific coloring
+- Tests/Artifacts: Lints clean; manual verification shows TM scopes honoring `--mt-...-tsx` overrides

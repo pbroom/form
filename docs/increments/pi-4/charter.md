@@ -116,6 +116,17 @@
   - Estimate: S
   - Status: In progress
 
+- Effort: Docs Tooling Compatibility
+  - Tasks:
+    - [x] Bump `typedoc` to support TypeScript 5.8
+    - [x] Update `vitepress` and DocSearch to support React 19
+  - ACs:
+    - [x] `pnpm install` shows no peer dependency warnings for TypeDoc/DocSearch
+  - Tests (TDD): None (tooling only); verify install output is clean
+  - Steps: update `package.json` versions and add pnpm overrides for DocSearch
+  - Estimate: XS
+  - Status: Done
+
 ## Scope Fence (Out of Scope)
 
 - Advanced editor QoL (formatting/folding), realtime multi-user collaboration, advanced adapters, Code Node runtime preview, and non-MVP plane/library features.
