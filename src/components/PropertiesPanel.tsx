@@ -132,6 +132,7 @@ export default function PropertiesPanel({
 						</CollapsibleTrigger>
 						<CollapsibleContent className='mt-1 text-xs'>
 							<CodeView
+								key={node.id}
 								node={node}
 								value={getCode(node.id)}
 								onChange={(val) => setCode(node.id, val)}

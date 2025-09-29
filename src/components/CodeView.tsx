@@ -20,8 +20,14 @@ export default function CodeView({
 }) {
 	const isCodeNode = node?.data?.typeKey === 'code';
 	const {theme} = useTheme();
-	const {fontFamily, fontLigatures, fontSize, minimap, currentLanguage, setCurrentLanguage} =
-		useEditorPreferences();
+	const {
+		fontFamily,
+		fontLigatures,
+		fontSize,
+		minimap,
+		currentLanguage,
+		setCurrentLanguage,
+	} = useEditorPreferences();
 	const isDark =
 		theme === 'dark' ||
 		(theme === 'system' &&
@@ -31,8 +37,12 @@ export default function CodeView({
 
 	const stableUri = `inmemory://code/${node?.id ?? 'singleton'}`;
 
-	const editorRef = useRef<import('monaco-editor').editor.IStandaloneCodeEditor | null>(null);
-	const modelRef = useRef<import('monaco-editor').editor.ITextModel | null>(null);
+	const editorRef = useRef<
+		import('monaco-editor').editor.IStandaloneCodeEditor | null
+	>(null);
+	const modelRef = useRef<import('monaco-editor').editor.ITextModel | null>(
+		null
+	);
 	const containerRef = useRef<HTMLDivElement | null>(null);
 
 	// Mount editor (React 19: async side-effects in useEffect)
@@ -88,7 +98,8 @@ export default function CodeView({
 	useEffect(() => {
 		(async () => {
 			const {init} = await import('modern-monaco');
-			const monaco = (await init()) as unknown as typeof import('monaco-editor');
+			const monaco =
+				(await init()) as unknown as typeof import('monaco-editor');
 			if (!modelRef.current) return;
 			monaco.editor.setModelLanguage(
 				modelRef.current,

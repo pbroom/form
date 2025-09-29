@@ -20,6 +20,7 @@
 ## Efforts
 
 - Effort: Node Graph Essentials
+
   - Tasks:
     - [ ] Create/select node; connect edges with `targetHandle`
     - [x] Scaffold custom Node/Handle/Edge primitives with `ConnectionTarget`
@@ -34,6 +35,7 @@
   - Status: In progress
 
 - Effort: Properties from Schema
+
   - Tasks:
     - [ ] Schema-driven field rendering (sliders, color, selects)
     - [ ] Bind props → viewport updates
@@ -45,6 +47,7 @@
   - Status: In progress
 
 - Effort: Code Editing (Monaco Integration)
+
   - Tasks:
     - [x] Replace CodeMirror with Monaco in `CodeView`
     - [x] Reuse `CodeView` from `PropertiesPanel` to avoid duplication
@@ -59,6 +62,7 @@
   - Status: Done
 
 - Effort: Command Log + Undo/Redo
+
   - Tasks:
     - [ ] Log create/select/connect/setProp/delete
     - [ ] Deterministic undo/redo
@@ -70,6 +74,7 @@
   - Status: Not started
 
 - Effort: Convex Sync + Projects
+
   - Tasks:
     - [x] Mutations for create/save/load project
     - [x] Deterministic JSON serialization
@@ -81,6 +86,7 @@
   - Status: In progress
 
 - Effort: Deterministic Codegen (TSX)
+
   - Tasks:
     - [ ] Minimal React/R3F emitter with fenced regions
     - [ ] `tsc --noEmit` typecheck on output
@@ -92,6 +98,7 @@
   - Status: Not started
 
 - Effort: Code View Authoring Guidance
+
   - Tasks:
     - [x] Document Node Package layout and inference rules (TS/JS/GLSL/Python)
     - [x] Define overlays for meta/ports/hud/controls/dialogs
@@ -103,6 +110,7 @@
   - Status: Done
 
 - Effort: Floating Dialogs — Architecture & Spec
+
   - Tasks:
     - [x] Author architecture RFC and component/state contracts
     - [ ] Define minimal store and host/rendering strategy
@@ -117,6 +125,7 @@
   - Status: In progress
 
 - Effort: Docs Tooling Compatibility
+
   - Tasks:
     - [x] Bump `typedoc` to support TypeScript 5.8
     - [x] Update `vitepress` and DocSearch to support React 19
@@ -124,6 +133,49 @@
     - [x] `pnpm install` shows no peer dependency warnings for TypeDoc/DocSearch
   - Tests (TDD): None (tooling only); verify install output is clean
   - Steps: update `package.json` versions and add pnpm overrides for DocSearch
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Cursor Slash Commands
+
+  - Tasks:
+    - [x] Create `/p` command implementing Increment Method flow
+    - [x] Create `/p -f` command for feedback processing
+    - [x] Add checklists to both commands
+  - ACs:
+    - [x] Commands appear under `/` in Cursor and are selectable
+    - [x] Command text mirrors `.cursor/rules/increments.mdc` flow
+    - [x] Checklists present covering pre-flight, TDD loop, post-action sync, and guardrails
+  - Tests (TDD): N/A (docs/agent integration); manual verify commands list and content
+  - Steps: add `.cursor/commands/{p.md,p-feedback.md}` with deterministic instructions and links
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Trunk + Preview Commands
+
+  - Tasks:
+    - [x] Create stacked PR command (Graphite)
+    - [x] Submit + label PR for preview composition
+    - [x] Restack command when `main` moves
+    - [x] Preview integration branch workflow command
+    - [x] Required checks reference command
+    - [x] Tag increment release command
+  - ACs:
+    - [x] Commands appear under `/` and mirror `.cursor/rules/trunk-preview.mdc`
+    - [x] Each command includes actionable steps and a checklist
+  - Tests (TDD): N/A (docs/agent integration); manual verify commands list and content
+  - Steps: add `.cursor/commands/trunk-*.md` and `.cursor/commands/preview-*.md`
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Collaboration Commands
+  - Tasks:
+    - [x] Add `/kowalski` sounding-board ideation command
+  - ACs:
+    - [x] Command appears under `/` and is clearly ideation-only (no deliverables)
+    - [x] Includes framing guidance, modes, outputs, prompts, and checklist
+  - Tests (TDD): N/A (doc-only)
+  - Steps: add `.cursor/commands/kowalski.md`
   - Estimate: XS
   - Status: Done
 

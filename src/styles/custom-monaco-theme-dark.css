@@ -1,0 +1,49 @@
+/* your app tokens live here and can be reused */
+:root {
+	--accent-600: #4d9375;
+	--bg-1: #121212;
+	--ink-1: #dbd7caee;
+}
+
+/* the authoring interface for the editor theme */
+.vscode-theme 'Vitesse Dark' {
+	@colors {
+		activity-bar {
+			active-border: var(--accent-600);
+			background: var(--bg-1);
+			border: #191919;
+			foreground: var(--ink-1);
+			inactive-foreground: #dedcd550;
+		}
+
+		activity-bar-badge {
+			background: #bfbaaa;
+			foreground: #121212;
+		}
+
+		badge {
+			background: #dedcd590;
+			foreground: #121212;
+		}
+	}
+
+	.semantic-tokens {
+		class: #6872ab;
+		interface: #5d99a9;
+		namespace: #db889a;
+		property: #b8a965;
+		type: #5d99a9;
+	}
+
+	@token-colors {
+		@rule {
+			scope: comment, punctuation.definition.comment, string.comment;
+			foreground: #758575dd;
+		}
+
+		@rule {
+			scope: entity.name.tag, tag.html;
+			foreground: #4d9375;
+		}
+	}
+}

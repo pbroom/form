@@ -166,6 +166,17 @@ Captured Code View authoring conventions and inference policy.
 
 ## Entry 15
 
+Revised authoring model to decouple node code from UI concerns via registries.
+
+- Action: Updated ARCHITECTURE.md to add registry-first authoring hooks (controls, complications/HUD, dialogs) and link Node Appendix placement
+- Files/Areas: `docs/architecture/ARCHITECTURE.md`
+- Decisions: Properties Panel owns control rendering; HUD uses standard appendix; dialogs are typed flyouts/windows opened via commands
+- Issues/Risks: Registry versioning and collision rules; plugin sandboxing
+- Learnings: Decoupling keeps node code pure and scales better for reuse
+- Tests/Artifacts: Doc-only change
+
+## Entry 15
+
 Ensured Tailwind styles override React Flow defaults by adjusting global CSS import order and deduping imports.
 
 - Action: Imported `@xyflow/react/dist/style.css` globally in `src/main.tsx` before `index.css`; removed local imports in `NodeGraphEditor.tsx` and `NodeGraphEditor(Legacy).tsx`; fixed stale import path in legacy editor
@@ -362,3 +373,51 @@ Migrated editor highlighting to Shiki + modern-monaco; removed legacy TM wiring.
 - Issues/Risks: Theme compile depends on CSSOM access; ensure variables exist; dynamic imports require network on first load
 - Learnings: Shiki scope ordering via CSS-driven theme provides deterministic, language-specific coloring
 - Tests/Artifacts: Lints clean; manual verification shows TM scopes honoring `--mt-...-tsx` overrides
+
+## Entry 32
+
+Added Cursor custom slash commands for the Increment Method and updated the charter.
+
+- Summary: Introduced `/p` and `/p -f` slash commands aligned to `.cursor/rules/increments.mdc`; added a corresponding Effort in PI-4 charter; ran unit tests and captured results.
+- Action: Created `.cursor/commands/p.md` and `.cursor/commands/p-feedback.md`; updated PI-4 charter with "Cursor Slash Commands" effort.
+- Files/Areas: `.cursor/commands/p.md`, `.cursor/commands/p-feedback.md`, `docs/increments/pi-4/charter.md`
+- Decisions: Keep commands documentation-only per Cursor docs; mirror Increment rules precisely; defer Playwright e2e reconfiguration.
+- Issues/Risks: Running `pnpm test -- tests/unit/` under Vitest still picks up Playwright specs leading to failed suites (by design); not part of the slash command change.
+- Learnings: Commands appear in Cursor when placed under `.cursor/commands/` and can reference local rules for consistency.
+- Tests/Artifacts: `pnpm test -- tests/unit/` → 18 passed unit files; 9 Playwright suites failed under Vitest (expected); total tests 64 passed.
+
+## Entry 33
+
+Enhanced slash commands with actionable checklists.
+
+- Summary: Added pre-flight, TDD loop, post-action sync, guardrails, and feedback intake checklists to increment slash commands.
+- Action: Updated `.cursor/commands/progress-increment.md` and `.cursor/commands/process-increment-feedback.md`; adjusted PI-4 charter tasks/ACs for command effort.
+- Files/Areas: `.cursor/commands/progress-increment.md`, `.cursor/commands/process-increment-feedback.md`, `docs/increments/pi-4/charter.md`
+- Decisions: Align with Cursor docs examples by including checklists to guide consistent execution; keep commands as documentation-only prompts.
+- Issues/Risks: None.
+- Learnings: Checklists improve repeatability and reduce omission risk during the increment loop.
+- Tests/Artifacts: No code impact; unit status unchanged since prior run.
+
+## Entry 34
+
+Added Trunk + Preview integration workflow commands.
+
+- Summary: Authored slash commands for stacked PR creation, submit+label, restack, preview integration branch, required checks, and tagging releases.
+- Action: Added `.cursor/commands/trunk-create-stacked-pr.md`, `trunk-submit-pr-and-label.md`, `trunk-restack.md`, `preview-build-integration-branch.md`, `trunk-required-checks.md`, `trunk-tag-release.md`; updated Charter with new effort.
+- Files/Areas: `.cursor/commands/*trunk*.md`, `.cursor/commands/preview-build-integration-branch.md`, `docs/increments/pi-4/charter.md`
+- Decisions: Mirror `.cursor/rules/trunk-preview.mdc` precisely; include checklists to ensure consistent execution; keep commands documentation-only.
+- Issues/Risks: Requires GitHub CLI and Graphite installed/configured locally; labels must exist in repo.
+- Learnings: Breaking down trunk + preview flow into discrete commands improves discoverability and repeatability.
+- Tests/Artifacts: Doc-only; no code/tests affected.
+
+## Entry 35
+
+Added `/kowalski` ideation command for sounding-board style brainstorming.
+
+- Summary: Created a new command to facilitate unconstrained analytical ideation and critical feedback without invoking increment steps.
+- Action: Added `.cursor/commands/kowalski.md`; updated Charter with a new "Collaboration Commands" effort.
+- Files/Areas: `.cursor/commands/kowalski.md`, `docs/increments/pi-4/charter.md`
+- Decisions: Keep ideation separate from implementation flow; provide modes, outputs, prompts, and a lightweight checklist.
+- Issues/Risks: None (doc-only).
+- Learnings: Having a dedicated ideation entrypoint encourages better framing and richer exploration.
+- Tests/Artifacts: N/A (doc-only change).
