@@ -171,3 +171,39 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 Built with ❤️ using modern web technologies
+
+# Editor theming and TextMate scopes
+
+## CSS-variable driven theming
+
+- Editor/workbench colors: `--monaco-editor-<kebab>` → `editor.<dots>`
+- Monarch tokens: `--monaco-token-<kebab>` → token `<dots>`
+- Optional font style per token: add `-font-style`
+
+Light: `:root` values. Dark: `.dark` values.
+
+## TextMate scopes
+
+- Enable in store: `useEditorPreferences().cssVars.textMate.enabled = true`
+- Scopes CSS vars: `--tm-scope-<scope-kebab>` (optional `-<lang>` suffix)
+  - Example:
+    - `--tm-scope-storage-type-function: #ffcc66`
+    - `--tm-scope-storage-type-function-tsx: #ffcc66`
+  - Optional font style: `--tm-scope-<scope>-font-style: italic`
+
+## Grammars and Onigasm
+
+Place these files under `public/`:
+
+```
+public/
+  onig.wasm
+  grammars/
+    JavaScript.tmLanguage.json
+    JavaScriptReact.tmLanguage.json
+    TypeScript.tmLanguage.json
+    TypeScriptReact.tmLanguage.json
+    GLSL.tmLanguage.json
+```
+
+The app will auto-wire JS, JSX, TS, TSX, and GLSL grammars if present.

@@ -1,6 +1,7 @@
 /* stylelint-disable */
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './styles/monaco.css';
 @import './styles/overrides.css';
 
 @custom-variant dark (&:is(.dark *));
@@ -119,4 +120,16 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+}
+
+@utility stroke-butt {
+	stroke-linecap: butt;
+}
+
+@utility stroke-round {
+	stroke-linecap: round;
+}
+
+@utility stroke-square {
+	stroke-linecap: square;
 }

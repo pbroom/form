@@ -1,1 +1,1 @@
-export {default} from './NodeGraphEditor';
+export {default} from './NodeGraphEditor(Legacy)';

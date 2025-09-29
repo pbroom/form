@@ -95,7 +95,51 @@ type IRNode = {
 
 - **Node Graph Editor**: React Flow + custom Handle/Edge.
 - **Properties Panel**: schema-driven; shadcn UI components.
+- **Floating Dialogs**: draggable, stackable dialogs for transient tools (see [Floating Dialogs](./floating-dialogs.md)).
 - **Code View**: CodeMirror w/ diagnostics.
+
+### 5.1 Code View & Node Authoring (conventions)
+
+- Authoring targets a tiny, predictable convention. Default (TS/JS) nodes infer inputs from function params and outputs from the return value. Non‑TS languages provide a small overlay.
+- Multi‑file “Node Package” layout (readability & scale):
+  - `node.ts|tsx`: pure function (TS/JS) defining ports by signature/return
+  - `ports.(ts|yaml)`: optional explicit ports (overrides; required for GLSL/Python)
+  - `meta.yaml`: label/color/description/tags
+  - `authoring.ts`: declarative authoring hooks (see below)
+  - `impl/*`: non‑TS sources (e.g., `shader.glsl`, `node.py`)
+  - `index.manifest.json`: ties files together
+
+Authoring hooks (registry‑first)
+
+- Controls: defined independently of node code and registered globally. Nodes declare which controls to use for which params.
+  - API: `addPropertyControls(nodeType, PropertyControlSpec[])`
+  - Control library is modular and reusable (Framer‑style). Properties Panel owns rendering and lifecycle.
+- Complications (HUD/Appendix): small, display‑focused components registered globally and mounted in a standard appendix container.
+  - API: `addComplications(nodeType, ComplicationSpec[])` (Apple‑Watch‑style “complications”)
+  - Renderer uses [Node Appendix](https://reactflow.dev/ui/components/node-appendix) to place content.
+- Dialogs: typed flyouts/windows opened via commands, used by controls/HUD for richer interactions (e.g., color picker, font browser, plugin UIs).
+  - API: `registerDialog(key, Component)`, `openDialog(key, input)`
+
+Inference rules
+
+- TS/JS: function parameters = inputs (defaults override system defaults); return object keys = outputs; primitive return → single `out`.
+- Python: infer when a single entry `def node(...) -> ...` exists with type hints (PEP‑484). `dict[str,T]` → named outputs; tuples → multiple outputs. If no hints → require `ports` overlay.
+- GLSL: infer when a single entry `node(...)` exists. Return type or `out` params define outputs; struct return splits into named outputs. Preprocessor/multiple candidates → require `ports`.
+
+Overlays & precedence
+
+- `ports` overrides all inference for types/labels/visibility.
+- `meta` provides human metadata only.
+- `authoring.ts` declares controls/complications/dialogs by key; actual implementations are resolved via registries.
+
+Constraints
+
+- All node code is pure/idempotent; external deps only via declared assets/runtime.
+- Deterministic snapshots store manifest + resolved ports + content hashes.
+
+Refactors
+
+- “Extract to Node/Subgraph” moves a pure function into a Node Package, generates manifest/meta/ports/authoring stub, registers a template, inserts a linked instance, and rewires the graph.
 - **Viewport**: WebGPU/WebGL preview.
 - **Library Panel**: search/insert templates/assets.
 - **Display Nodes**: inline preview nodes; budgeted/throttled.
@@ -150,14 +194,14 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
 
 ## 8. Roadmap Phases (high-level)
 
-- **Increment 1 – MVP Core**
+- **Phase 1 – MVP Core**
 
   - TS code nodes (linked, inline)
   - Properties from schema
   - Command log + undo/redo
   - Convex sync + projects
 
-- **Increment 2 – Planes & Libraries**
+- **Phase 2 – Planes & Libraries**
 
   - Grouping → subgraph templates
   - PIC autogen
@@ -165,20 +209,20 @@ Each increment is defined by a **Charter** and tracked by a **Log**.
   - Basic realtime collab + presence
   - Snapshots
 
-- **Increment 3 – Displays & Search**
+- **Phase 3 – Displays & Search**
 
   - Display nodes (image/scalar)
   - GLSL node runtime
   - Library search & filters
   - Roles/sharing
 
-- **Increment 4 – Attachments & Upgrades**
+- **Phase 4 – Attachments & Upgrades**
 
   - Attachment modes (forked, baked, inline)
   - Upgrade/remap wizard
   - Overrides
 
-- **Increment 5 – Publishing & Telemetry**
+- **Phase 5 – Publishing & Telemetry**
   - Public libraries + publishing
   - Advanced telemetry (perf, audit)
   - MCP agent tools

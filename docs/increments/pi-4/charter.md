@@ -1,77 +1,189 @@
-# Increment Charter – PI-4
+# Increment Charter – PI-4 (Phase 1 – MVP Core)
 
 ## Context Capsule
 
-- Aim: Progress Code Node to a shippable state with safe runtime preview and initial codegen integration while polishing click→click UX.
-- Constraints/Guardrails: Preserve determinism, type safety, and adapter/IR contracts. Keep editor QoL scoped.
+- Aim: Ship the MVP Core outlined in ARCHITECTURE.md Phase 1 — TS code nodes (linked/inline), schema-driven Properties, command log with undo/redo, and Convex-backed projects (create/save/load).
+- Constraints/Guardrails: Deterministic behavior, type safety, accessibility, and adherence to command-first architecture. Keep scope tight to MVP Core.
 
 ## Focus (What we ship)
 
-- Minimal shippable Code Node: evaluate function safely, dynamic input sockets from signature (primitives), output port wired; integrate into codegen minimally.
+- A minimal end-to-end slice: create a project → insert basic nodes → wire connections → see live preview → undo/redo via command log → export deterministic TSX → save/load project via Convex.
 
 ## Prioritized Acceptance Criteria (Cornerstones)
 
-- [ ] Safe runtime preview executes user function with timeout and error capture
-- [ ] Dynamic input sockets derived from function params (primitives) refresh on code change
-- [ ] Emitted TSX includes Code Node output wiring and typechecks (noEmit)
-- [ ] Click→click chooser stable with tests in PW runner
+- [ ] TS code nodes support linked and inline attachments; nodes have typed inputs/outputs
+- [ ] Properties Panel auto-renders controls from node schema; updates reflect in preview within 100ms
+- [ ] Command log records core ops (create/select/connect/setProp/delete) with undo/redo
+- [ ] Convex projects API supports create/save/load round-trip for a single-module project
+- [ ] Deterministic TSX emitter produces stable output for identical IR
 
 ## Efforts
 
-- Effort: Sandbox Runtime
+- Effort: Node Graph Essentials
 
   - Tasks:
-    - [ ] Timeout/abort controller; error surface
-    - [ ] Deterministic execution with provided inputs
+    - [ ] Create/select node; connect edges with `targetHandle`
+    - [x] Scaffold custom Node/Handle/Edge primitives with `ConnectionTarget`
+    - [x] Globalize React Flow base CSS and ensure Tailwind overrides
+    - [x] Extend runtime IR with `templateRef` and `hud` on nodes
+    - [x] Add HUD wrapper for nodes (Appendix-style) and demo content on default code node
   - ACs:
-    - [ ] No UI freeze; errors captured
-  - Tests (TDD): Timeout/error tests
-  - Steps: wrapper → scheduler → UI
+    - [ ] Core graph interactions stable and accessible; Tailwind consistently overrides React Flow defaults per theming guide
+  - Tests (TDD): Playwright specs for selection/connect; unit tests for IR ops
+  - Steps: event wiring → state updates → a11y hooks
+  - Estimate: M
+  - Status: In progress
+
+- Effort: Properties from Schema
+
+  - Tasks:
+    - [ ] Schema-driven field rendering (sliders, color, selects)
+    - [ ] Bind props → viewport updates
+  - ACs:
+    - [ ] Controls reflect schema and persist to IR; preview updates in ≤100ms
+  - Tests (TDD): unit tests for schema mapping; UI presence tests
+  - Steps: schema map → component bindings → debounce/update
+  - Estimate: M
+  - Status: In progress
+
+- Effort: Code Editing (Monaco Integration)
+
+  - Tasks:
+    - [x] Replace CodeMirror with Monaco in `CodeView`
+    - [x] Reuse `CodeView` from `PropertiesPanel` to avoid duplication
+    - [x] Expose editor preferences: custom light/dark themes, monospace font, minimap
+    - [ ] Expose simple options prop for future QoL (formatting/folding)
+  - ACs:
+    - [x] Editors render with `data-testid="code-editor-textarea"` unchanged
+    - [x] Value/onChange behavior unchanged; 100ms debounce remains at callsite
+  - Tests (TDD): Rely on existing selectors in PW specs; unit impact none
+  - Steps: Install deps → swap component → refactor usage → run tests
+  - Estimate: S
+  - Status: Done
+
+- Effort: Command Log + Undo/Redo
+
+  - Tasks:
+    - [ ] Log create/select/connect/setProp/delete
+    - [ ] Deterministic undo/redo
+  - ACs:
+    - [ ] Any sequence of logged ops can be undone/redone without corruption
+  - Tests (TDD): op invariants; undo/redo round-trips; snapshot of IR
+  - Steps: command dispatcher → log storage → reducers → history
   - Estimate: M
   - Status: Not started
 
-- Effort: Dynamic Sockets from Signature (Primitives)
+- Effort: Convex Sync + Projects
 
   - Tasks:
-    - [ ] Integrate parser into node definition → target handles
-    - [ ] Refresh sockets on code change; persist params
+    - [x] Mutations for create/save/load project
+    - [x] Deterministic JSON serialization
   - ACs:
-    - [ ] Inputs match signature; invalid types blocked
-  - Tests (TDD): parser integration; snapshots
-  - Steps: parse → normalize → apply
-  - Estimate: M
-  - Status: Not started
+    - [ ] Save→Load round-trip preserves IR and module state
+  - Tests (TDD): save/load unit; minimal e2e
+  - Steps: schema → mutations/queries → client wiring
+  - Estimate: S
+  - Status: In progress
 
-- Effort: Codegen Integration (Minimal)
+- Effort: Deterministic Codegen (TSX)
 
   - Tasks:
-    - [ ] Emit function and wire output prop
-    - [ ] Ensure imports/types only when referenced
+    - [ ] Minimal React/R3F emitter with fenced regions
+    - [ ] `tsc --noEmit` typecheck on output
   - ACs:
-    - [ ] tsc noEmit passes
-  - Tests (TDD): snapshot + typecheck
-  - Steps: emitter ext → imports → typecheck
+    - [ ] Identical IR yields identical TSX
+  - Tests (TDD): TSX snapshot; typecheck script
+  - Steps: tree walk → JSX emit → imports → snapshot
   - Estimate: S
   - Status: Not started
 
-- Effort: Click→Click UX hardening
+- Effort: Code View Authoring Guidance
+
   - Tasks:
-    - [ ] E2E stabilization under Playwright
-    - [ ] Outside-click cancel and focus handling
+    - [x] Document Node Package layout and inference rules (TS/JS/GLSL/Python)
+    - [x] Define overlays for meta/ports/hud/controls/dialogs
   - ACs:
-    - [ ] Specs pass in CI
-  - Tests (TDD): Playwright specs
-  - Steps: event cleanup → overlay focus
+    - [x] ARCHITECTURE.md includes conventions and precedence
+  - Tests (TDD): N/A (doc-only)
+  - Steps: Update architecture doc; add charter/log entries
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Floating Dialogs — Architecture & Spec
+
+  - Tasks:
+    - [x] Author architecture RFC and component/state contracts
+    - [ ] Define minimal store and host/rendering strategy
+    - [ ] Specify a11y, keyboard, and dismissal rules with tests
+  - ACs:
+    - [ ] Architecture doc exists and is linked from ARCHITECTURE.md
+    - [ ] Store interface covers open/close/stack/position and parent→child lifecycle
+    - [ ] Test plan enumerated (unit + e2e + a11y)
+  - Tests (TDD): RFC-level checklist; unit tests to be added when implementation is scheduled
+  - Steps: write RFC → update architecture index → align with Properties Panel triggers → plan future implementation
   - Estimate: S
-  - Status: Not started
+  - Status: In progress
+
+- Effort: Docs Tooling Compatibility
+
+  - Tasks:
+    - [x] Bump `typedoc` to support TypeScript 5.8
+    - [x] Update `vitepress` and DocSearch to support React 19
+  - ACs:
+    - [x] `pnpm install` shows no peer dependency warnings for TypeDoc/DocSearch
+  - Tests (TDD): None (tooling only); verify install output is clean
+  - Steps: update `package.json` versions and add pnpm overrides for DocSearch
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Cursor Slash Commands
+
+  - Tasks:
+    - [x] Create `/p` command implementing Increment Method flow
+    - [x] Create `/p -f` command for feedback processing
+    - [x] Add checklists to both commands
+  - ACs:
+    - [x] Commands appear under `/` in Cursor and are selectable
+    - [x] Command text mirrors `.cursor/rules/increments.mdc` flow
+    - [x] Checklists present covering pre-flight, TDD loop, post-action sync, and guardrails
+  - Tests (TDD): N/A (docs/agent integration); manual verify commands list and content
+  - Steps: add `.cursor/commands/{p.md,p-feedback.md}` with deterministic instructions and links
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Trunk + Preview Commands
+
+  - Tasks:
+    - [x] Create stacked PR command (Graphite)
+    - [x] Submit + label PR for preview composition
+    - [x] Restack command when `main` moves
+    - [x] Preview integration branch workflow command
+    - [x] Required checks reference command
+    - [x] Tag increment release command
+  - ACs:
+    - [x] Commands appear under `/` and mirror `.cursor/rules/trunk-preview.mdc`
+    - [x] Each command includes actionable steps and a checklist
+  - Tests (TDD): N/A (docs/agent integration); manual verify commands list and content
+  - Steps: add `.cursor/commands/trunk-*.md` and `.cursor/commands/preview-*.md`
+  - Estimate: XS
+  - Status: Done
+
+- Effort: Collaboration Commands
+  - Tasks:
+    - [x] Add `/kowalski` sounding-board ideation command
+  - ACs:
+    - [x] Command appears under `/` and is clearly ideation-only (no deliverables)
+    - [x] Includes framing guidance, modes, outputs, prompts, and checklist
+  - Tests (TDD): N/A (doc-only)
+  - Steps: add `.cursor/commands/kowalski.md`
+  - Estimate: XS
+  - Status: Done
 
 ## Scope Fence (Out of Scope)
 
-- Advanced editor QoL (formatting, folding, search)
-- Non-primitive type extraction
-- Multi-file modules and external imports
+- Advanced editor QoL (formatting/folding), realtime multi-user collaboration, advanced adapters, Code Node runtime preview, and non-MVP plane/library features.
 
 ## Exit Criteria
 
-- All ACs above satisfied; demoable end-to-end with Code Node producing a value consumed by another node.
+- All ACs satisfied; tests pass; demo shows create→wire→preview→undo/redo→export→save/load end-to-end.
 - Status: In progress

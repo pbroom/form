@@ -1,0 +1,35 @@
+/* Monaco Editor Overrides */
+
+:root {
+	/* Font + general editor-related vars (optional) */
+	--monaco-font-family: "'Input Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+
+	/* Editor color variables (reference app theme tokens) */
+	--monaco-editor-background: #ffffff;
+
+	/* TextMate/Token variables (LIGHT) using unified --mt- prefix */
+	--mt-comment: #6b7280;
+	--mt-keyword: #0000ff;
+	--mt-punctuation-definition-block: #ff0000; /* example */
+}
+
+.dark {
+	/* Editor color variables (reference app theme tokens) */
+	--monaco-editor-background: #181818;
+	--monaco-editor-foreground: #eeeeee;
+	--monaco-editorlinenumber-foreground: #666666;
+	--monaco-editorcursor-foreground: #ffffff;
+	--monaco-editor-selectionbackground: #1f1f1f;
+
+	/* TextMate/Token variables (DARK) */
+	--mt-comment: #666666;
+	--mt-keyword: #00bbff;
+	--mt-identifier: #eeeeee;
+	--mt-string: #bb88ff;
+	--mt-number: #ff8866;
+	--mt-punctuation-definition-block: #ff0000;
+	--mt-punctuation-definition-block-tsx: #ff0000;
+	/* --mt-delimiter-bracket-ts: #999999; */
+}
+
+/* Ensure Monaco base CSS is present for layout; Shiki colors come from token classes */

@@ -8,6 +8,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
+			'@grammars': path.resolve(__dirname, './src/vendor/shiki/grammars'),
 		},
 	},
 });
